@@ -1,0 +1,98 @@
+---
+sidebar: sidebar 
+permalink: reference_lic_ontap_features.html 
+keywords: license, licensing, ontap features, default ontap features 
+summary: ONTAP Select 全面支援大多數 ONTAP 功能。部署叢集時，許多 ONTAP 功能會自動為每個節點授權。但是，某些功能需要單獨的授權。 
+---
+= ONTAP Select 對 ONTAP 功能的支援
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+ONTAP Select 支援大多數 ONTAP 功能。部署叢集時，許多 ONTAP 功能會自動為每個節點授權。但是，某些功能需要單獨的授權。
+
+
+NOTE: ONTAP Select 通常不支援具有硬體特定相依性的 ONTAP 功能。
+
+
+
+[[ontap-features-licensed-by-default]]
+[[licensed-ontap-features]]
+== 預設授權的 ONTAP 功能
+
+ONTAP Select 支援以下 ONTAP 功能，並且預設已取得授權：
+
+* 自主勒索軟體防護（ARP）（手動更新）
+* CIFS
+* 重複資料刪除與壓縮
+* 使用金鑰管理互通性協定 (KMIP) 進行外部金鑰管理
++
+了解更多link:https://docs.netapp.com/us-en/ontap/encryption-at-rest/configure-netapp-volume-encryption-concept.html["啟用和設定外部金鑰管理"^]。
+
+* FlexCache
++
+ONTAP Select 支援具備回寫功能的 FlexCache 快取 Volume。不支援具有回寫功能的 FlexCache 來源磁碟區。
+
++
+link:concept_ots_overview.html#flexcache-write-back-with-ontap-select["深入瞭解 FlexCache 與 ONTAP Select 的回寫功能"]
+
+* FlexClone
+* iSCSI
+* NDMP
+* NetApp Volume Encryption （僅限非限制國家/地區）
+* NFS
+* NVMe over TCP
+* ONTAP 多租戶功能
+* ONTAP S3
+* S3 SnapMirror
+* SnapLock Select
++
+SnapLock Select 是 ONTAP SnapLock 專為 ONTAP Select 設計的實作，包含 SnapLock Enterprise。但不包含 SnapLock Compliance。
+
++
+瞭解 link:https://docs.netapp.com/us-en/ontap/snaplock/index.html["ONTAP SnapLock"^]
+
+* SnapMirror
++
+ONTAP Select 不支援非同步 SnapMirror 中的一致性群組。
+
+* SnapRestore
+* SnapVault
+* Storage VM 災難復原（SVM DR）
++
+ONTAP Select 支援 SVM DR 作為來源和目的地，最多支援 16 個關係。SVM DR 支援僅限於使用來源 ONTAP 版本到版本 +2。例如，ONTAP Select 9.16.1 來源可以連接到目的地 ONTAP 版本 9.16.1、9.17.1 或 9.18.1。
+
+
+
+
+
+[[ontap-features-that-are-separately-licensed]]
+[[other-ontap-features]]
+== 需要單獨授權的 ONTAP 功能
+
+對於任何未預設授權的 ONTAP 功能、您需要取得個別授權、包括：
+
+* FabricPool
++
+
+NOTE: 當使用 StorageGRID 時，您不需要 FabricPool 授權。
+
+* MetroCluster SDS（ONTAP Select premium license offering）
+* SnapMirror 雲端
++
+您需要 link:https://mysupport.netapp.com/site/help["開啟非技術支援案例"^] 以獲得 SnapMirror 雲端授權。
+
++
+瞭解 link:https://docs.netapp.com/us-en/ontap/concepts/snapmirror-cloud-backups-object-store-concept.html["SnapMirror 雲端備份至物件儲存設備"^]
+
+
+
+.相關資訊
+* link:concept_ots_overview.html#compare-ontap-select-and-ontap-9["比較 ONTAP Select 和 ONTAP 9"]
+* link:https://mysupport.netapp.com/site/systems/master-license-keys["了解 NetApp ONTAP 主授權金鑰"^]
+

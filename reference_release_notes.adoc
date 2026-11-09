@@ -1,0 +1,23 @@
+---
+sidebar: sidebar 
+permalink: reference_release_notes.html 
+keywords:  
+summary:  
+---
+= ONTAP Select 發行說明
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+ONTAP Select 的版本資訊提供特定版本的資訊，包括新功能、支援的組態、升級注意事項、已知問題、已修正問題和已知限制。
+
+
+NOTE: 您需要一個帳戶才能登入 NetApp 支援網站以存取發行說明。
+
+.目前版本的 ONTAP Select
+您可以存取 link:https://library.netapp.com/ecm/ecm_download_file/ECMLP3378465["ONTAP Select 9.19.1 版本說明"^] 以檢視目前版本的詳細資訊。

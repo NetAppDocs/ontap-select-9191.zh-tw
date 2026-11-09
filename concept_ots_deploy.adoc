@@ -1,0 +1,87 @@
+---
+sidebar: sidebar 
+permalink: concept_ots_deploy.html 
+keywords: ontap select deploy, deploy administration utility, deploy utility, functionality, accessing 
+summary: ONTAP Select Deploy 是用於部署和管理 ONTAP Select 叢集的管理公用程式。 
+---
+= 了解 ONTAP Select Deploy
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+ONTAP Select Deploy 是用於部署和管理 ONTAP Select 叢集的管理公用程式。Deploy 被封裝為 Linux 虛擬機器，您必須在建立 ONTAP Select 叢集之前安裝它。
+
+
+
+[[core-functionality]]
+== 核心功能
+
+Deploy 管理公用程式執行以下核心功能：
+
+* 記錄部署 ONTAP Select 的每個 Hypervisor 主機的詳細資訊
+* 設定主機並安裝所需的授權
+* 部署和管理 ONTAP Select 叢集
+* 維護 ONTAP Select 叢集和主機的清單
+* 收集 AutoSupport 資料並傳送至 NetApp
+* 維護一套內部 ONTAP Select 節點映像
+* 支援 Hypervisor 特定的命令格式和傳輸協定
+
+
+
+
+[[ways-you-can-access-the-deploy-utility]]
+== 您可以存取 Deploy 公用程式的方式
+
+存取 Deploy 管理實用程式時，您有多種選項可供選擇。所有外部介面的功能都相同。您應該選擇最符合您特定部署目標和要求的存取選項。無論選擇哪種方式，您都必須使用管理員帳戶和有效密碼登入。
+
+
+
+[[web-graphical-user-interface]]
+=== Web 圖形使用者介面
+
+您可以透過現代網頁瀏覽器存取 Deploy 公用程式。Web 使用者介面提供直覺易用的介面，在大多數情況下，它將是您使用該公用程式的主要介面。
+
+
+
+[[command-line-interface]]
+=== 命令列介面
+
+管理 shell 提供基於文字的命令列介面。您可以透過以下方式存取 CLI 管理 shell：
+
+* 安全外殼 (SSH)
+* 虛擬機器主控台
+
+
+通常情況下，您會在安裝和初始設定過程中使用虛擬機器控制台。但是，在大多數情況下，SSH 提供了更靈活、更便捷的選擇。
+
+
+
+[[rest-web-services-api]]
+=== REST Web 服務 API
+
+向外部用戶端公開的 REST Web 服務 API 為連接到 Deploy 公用程式提供了另一種選擇。您可以使用任何支援 REST Web 服務的主流程式語言或工具存取該 API。常用的語言包括：
+
+* Python
+* Java
+* Curl
+
+
+使用程式設計或腳本語言可以實現 ONTAP Select 叢集的自動化部署和管理。
+
+
+
+[[ontap-select-online-documentation-web-page]]
+=== ONTAP Select 線上文件網頁
+
+在 Deploy 公用程式中顯示線上文件網頁是存取 REST Web 服務 API 的另一種方式。但是，您無需使用程式語言，而是透過瀏覽器存取該頁面來存取管理 API。提供以下功能：
+
+* REST Web 服務 API 中每個呼叫的詳細說明
+* 能夠手動發出任何 API 呼叫
+
+
+您可以使用 Deploy 虛擬機器的 IP 或網域名稱存取線上文件頁面。若要顯示該頁面，請在瀏覽器中輸入下列格式的 URL（將適當的 IP 位址或網域名稱替換為您的 Deploy VM 執行個體）： `\http://<ip_address>/api/ui`

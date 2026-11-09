@@ -1,0 +1,24 @@
+---
+sidebar: sidebar 
+permalink: concept_perf_general.html 
+keywords: ontap select, performance 
+summary: ONTAP Select 叢集的效能會因硬體配置的不同而有所差異。 
+---
+= 了解 ONTAP Select 的效能
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+ONTAP Select 叢集的效能會因底層硬體和組態的特性而有顯著差異。具體的硬體組態是影響特定 ONTAP Select 執行個體效能的最主要因素。以下是一些影響特定 ONTAP Select 執行個體效能的因素：
+
+* *核心頻率*。一般而言，頻率越高越好。
+* *單路與多路*。ONTAP Select 不使用多路功能，但支援多路配置的 Hypervisor 負荷會導致總效能出現一定偏差。
+* *RAID 卡組態及相關 Hypervisor 驅動程式*。Hypervisor 提供的預設驅動程式可能需要由硬體廠商驅動程式取代。
+* *RAID 群組中的磁碟機類型和磁碟機數量*。
+* *Hypervisor 版本和修補程式等級*。
+

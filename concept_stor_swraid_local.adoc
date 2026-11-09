@@ -1,0 +1,258 @@
+---
+sidebar: sidebar 
+permalink: concept_stor_swraid_local.html 
+keywords: ontap select, software raid, local attached storage, protection 
+summary: 軟體 RAID 是 ONTAP 軟體堆疊中實作的 RAID 抽象層。它提供的功能與傳統 ONTAP 平台（例如 FAS）中的 RAID 層相同。此 RAID 層執行磁碟機同位校驗計算，並為 ONTAP Select 節點提供單一磁碟機故障的保護。 
+---
+= ONTAP Select 軟體 RAID 組態服務，適用於本機附加儲存設備
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+軟體 RAID 是 ONTAP 軟體堆疊中實作的 RAID 抽象層。它提供的功能與傳統 ONTAP 平台（例如 FAS）中的 RAID 層相同。此 RAID 層執行磁碟機同位校驗計算，並為 ONTAP Select 節點提供單一磁碟機故障的保護。
+
+除了硬體 RAID 組態之外，ONTAP Select 也提供軟體 RAID 選項。在某些環境中，例如在小型商用硬體上部署 ONTAP Select 時，硬體 RAID 控制器可能無法使用或不適用。軟體 RAID 擴充了可用的部署選項，以納入此類環境。若要在您的環境中啟用軟體 RAID，請記住以下幾點：
+
+* 它可透過 Premium 或 Premium XL 授權取得。
+* 它僅支援 SSD 或 NVMe（需要 Premium XL 授權）磁碟機用於 ONTAP 根磁碟和資料磁碟。
+* ONTAP Select VM 開機分割區需要單獨的系統磁碟。
++
+** 選擇單獨的磁碟（SSD 或 NVMe 磁碟機）來建立系統磁碟（多節點設定中的 NVRAM、Boot/CF 卡、Coredump 和 Mediator）的資料存放區。
+
+
+
+
+[NOTE]
+====
+* 服務磁碟和系統磁碟這兩個術語可以互換使用。
++
+** 服務磁碟是 ONTAP Select VM 中用於服務各種項目（例如叢集、開機等）的虛擬磁碟（VMDK）。
+** 從主機角度來看，服務磁碟位於單一實體磁碟（統稱為服務/系統實體磁碟）上。此實體磁碟必須包含 DAS 資料儲存區。ONTAP Deploy 會在叢集部署期間為 ONTAP Select VM 建立這些服務磁碟。
+
+
+* 無法將 ONTAP Select 系統磁碟進一步分散到多個資料儲存區或多個實體磁碟機。
+* 硬體 RAID 並未被棄用。
+
+
+====
+
+
+[[software-raid-configuration-for-local-attached-storage]]
+== 本機附加儲存設備的軟體 RAID 組態
+
+使用軟體 RAID 時，理想情況下不需要硬體 RAID 控制器；但是，如果系統確實有現有的 RAID 控制器，則必須遵守以下要求：
+
+* 您必須停用硬體 RAID 控制器，以便磁碟可以直接呈現給系統（JBOD）。通常可以在 RAID 控制器 BIOS 中進行此變更。
+* 或者，硬體 RAID 控制器應設定為 SAS HBA 模式。例如，某些 BIOS 設定除了 RAID 模式外，還允許使用「AHCI」模式，您可以選擇啟用該模式來啟用 JBOD 模式。這樣可以實現直通，使實體磁碟機能夠直接被主機識別。
+
+
+根據控制器支援的最大磁碟機數量，可能需要額外的控制器。使用 SAS HBA 模式時，請確保 I/O 控制器（SAS HBA）的最低速度為 6Gbps。然而，NetApp 建議使用 12Gbps 的速度。
+
+不支援其他硬體 RAID 控制器模式或組態。例如，某些控制器允許 RAID 0 支援，可以人為地啟用磁碟直通，但影響可能不理想。支援的實體磁碟（僅限 SSD）大小介於 200GB 至 16TB 之間。
+
+
+NOTE: 管理員需要追蹤 ONTAP Select VM 正在使用的磁碟機,並防止在主機上意外使用這些磁碟機。
+
+
+
+[[ontap-select-virtual-and-physical-disks]]
+== ONTAP Select 虛擬和實體磁碟
+
+對於採用硬體 RAID 控制器的組態、實體磁碟備援由 RAID 控制器提供。ONTAP Select 會提供一個或多個 VMDK、ONTAP 管理員可從中設定資料集合體。這些 VMDK 會以 RAID 0 格式進行等量分割、因為使用 ONTAP 軟體 RAID 是多餘的、效率不佳、而且由於硬體層級提供的恢復能力而無效。此外、用於系統磁碟的 VMDK 與用於儲存使用者資料的 VMDK 位於相同的資料存放區中。
+
+使用軟體 RAID 時，ONTAP Deploy 會向 ONTAP Select 提供一組 VMDK 和實體磁碟，以及 SSD 的裸設備對映 [RDM] 和 NVMe 的直通或 DirectPath IO 設備。
+
+以下圖表更詳細地顯示了這種關係，突顯了 ONTAP Select VM 內部使用的虛擬磁碟與用於儲存使用者資料的實體磁碟之間的差異。
+
+*ONTAP Select 軟體 RAID：使用虛擬磁碟和 RDM*
+
+image:ST_18.PNG["ONTAP Select 軟體 RAID：使用虛擬磁碟和 RDM"]
+
+系統磁碟（VMDK）位於相同資料儲存區和相同實體磁碟上。虛擬 NVRAM 磁碟需要快速且耐用的媒體。因此，僅支援 NVMe 和 SSD 類型的資料儲存區。
+
+image:ST_19.PNG["ONTAP Select 軟體 RAID 與 NVMe 磁碟機：使用虛擬磁碟和直通設備"]
+
+系統磁碟（VMDK）位於相同資料儲存區和相同實體磁碟上。虛擬 NVRAM 磁碟需要快速且耐用的媒體。因此，僅支援 NVMe 和 SSD 類型的資料儲存區。如果使用 NVMe 驅動器儲存資料，出於效能考慮，系統磁碟也應該是 NVMe 裝置。在全 NVMe 組態中，INTEL Optane 卡是系統磁碟的理想選擇。
+
+
+NOTE: 目前版本無法將 ONTAP Select 系統磁碟進一步分散到多個資料儲存或多個實體磁碟機。
+
+每個資料磁碟被分成三個部分：一個小的根分割區（條帶）和兩個大小相等的分割區，從而在 ONTAP Select VM 中建立兩個資料磁碟。分割區採用根資料資料（RD2）架構，如下圖所示，分別展示了單節點叢集和高可用性（HA）配對中單一節點的分割區情況。
+
+`P` 表示奇偶校驗磁碟機、 `DP` 表示雙奇偶校驗磁碟機、 `S` 表示備用磁碟機。
+
+*單節點叢集的 RDD 磁碟分割*
+
+image:ST_19.jpg["單節點叢集的 RDD 磁碟分割"]
+
+*多節點叢集（HA 配對）的 RDD 磁碟分割*
+
+image:ST_20.jpg["多節點叢集（ HA 配對）的 RDD 磁碟分割"]
+
+ONTAP 軟體 RAID 支援下列 RAID 類型：RAID 4、RAID-DP 和 RAID-TEC。這些 RAID 結構與 FAS 和 AFF 平台使用的 RAID 結構相同。對於根分割區配置，ONTAP Select 僅支援 RAID 4 和 RAID-DP。當使用 RAID-TEC 進行資料聚合時，整體保護等級為 RAID-DP。ONTAP Select HA 採用無共享架構，將每個節點的組態複製到其他節點。這意味著每個節點必須儲存其根分割區以及其對等節點根分割區的副本。資料磁碟只有一個根分割區。這意味著資料磁碟的最小數量取決於 ONTAP Select 節點是否屬於 HA 配對。
+
+對於單節點叢集，所有資料分割區都用於儲存本機（作用中）資料。對於屬於 HA 配對一部分的節點，一個資料分割區用於儲存該節點的本機（作用中）資料，第二個資料分割區用於鏡射來自 HA 對等節點的作用中資料。
+
+
+
+[[passthrough-directpath-io-devices-vs-raw-device-maps-rdms]]
+== 直通（DirectPath IO）裝置與原始裝置對應（RDM）
+
+ESXi 和 KVM 虛擬機器管理程式不支援將 NVMe 磁碟作為裸裝置對應（RDM）使用。若要讓 ONTAP Select 直接控制 NVMe 磁碟、您必須在 ESXi 或 KVM 中將這些磁碟機配置為直通裝置。將 NVMe 裝置配置為直通裝置需要伺服器 BIOS 的支援、而且您可能需要重新啟動主機。此外、每個主機可指派的直通裝置數量有限制、具體數量可能因平台而異。不過、ONTAP Deploy 將每個 ONTAP Select 節點的 NVMe 裝置數量限制為 14 個。這表示 NVMe 組態以犧牲總容量為代價、提供了非常高的 IOPS 密度（IOPS/TB）。或者、如果您需要具有更大儲存容量的高效能組態、建議的組態是使用較大的 ONTAP Select VM 大小、Intel Optane 卡作為系統磁碟、以及適量的 SSD 磁碟機進行資料儲存。
+
+
+NOTE: 若要充分發揮 NVMe 的效能，請考慮使用較大的 ONTAP Select VM 容量。
+
+直通設備和 RDM 之間還有另一個區別。RDM 可以對應到正在執行的虛擬機器 (VM)。而直通設備則需要重新啟動 VM。這表示任何 NVMe 驅動器更換或容量擴充（新增驅動器）操作都需要重新啟動 ONTAP Select VM。驅動器更換和容量擴充（新增驅動器）操作由 ONTAP Deploy 中的工作流程驅動。ONTAP Deploy 管理單節點叢集的 ONTAP Select 重新啟動以及高可用性 (HA) 配對的容錯移轉/容錯回復。但是，需要注意的是，使用 SSD 資料驅動器（無需 ONTAP Select 重新啟動/容錯移轉）和使用 NVMe 資料驅動器（需要 ONTAP Select 重新啟動/容錯移轉）之間存在差異。
+
+
+
+[[physical-and-virtual-disk-provisioning]]
+== 實體和虛擬磁碟資源配置
+
+為了提供更流暢的使用者體驗，ONTAP Deploy 會自動從指定的資料儲存區（實體系統磁碟）配置系統（虛擬）磁碟，並將其附加到 ONTAP Select VM。此作業會在初始設定期間自動執行，以便 ONTAP Select VM 能夠開機。RDM 會被分割，並自動建置根 Aggregate。如果 ONTAP Select 節點是 HA 配對的一部分，則資料分割區會自動指派給本機儲存資源池和鏡射儲存資源池。此指派會在叢集建立作業和儲存設備新增作業期間自動執行。
+
+由於 ONTAP Select VM 上的資料磁碟與底層實體磁碟相關聯，因此建立具有更多實體磁碟的組態會對效能產生影響。
+
+
+NOTE: 根 Aggregate 的 RAID 群組類型取決於可用磁碟的數量。ONTAP Deploy 會選擇適當的 RAID 群組類型。如果節點已指派足夠的磁碟，則使用 RAID-DP；否則，將建立 RAID-4 根 Aggregate。
+
+使用軟體 RAID 為 ONTAP Select VM 新增容量時，管理員必須考慮實體磁碟機的大小和所需的磁碟機數量。如需詳細資訊，請參閱 link:concept_stor_capacity_inc.html["增加儲存容量"]。
+
+與 FAS 和 AFF 系統類似，您只能在現有 RAID 群組中新增容量等於或大於現有 RAID 群組的磁碟機。容量較大的磁碟機會調整為適當大小。如果您要建立新的 RAID 群組，則新 RAID 群組的大小應與現有 RAID 群組的大小相符，以確保整體 Aggregate 效能不會降低。
+
+
+
+[[match-an-ontap-select-disk-to-the-corresponding-esxi-or-kvm-disk]]
+== 將 ONTAP Select 磁碟與對應的 ESXi 或 KVM 磁碟相匹配
+
+ONTAP Select 磁碟通常標示為 NET x.y。您可以使用下列 ONTAP 指令取得磁碟 UUID：
+
+[source, cli]
+----
+<system name>::> disk show NET-1.1
+Disk: NET-1.1
+Model: Micron_5100_MTFD
+Serial Number: 1723175C0B5E
+UID: *500A0751:175C0B5E*:00000000:00000000:00000000:00000000:00000000:00000000:00000000:00000000
+BPS: 512
+Physical Size: 894.3GB
+Position: shared
+Checksum Compatibility: advanced_zoned
+Aggregate: -
+Plex: -This UID can be matched with the device UID displayed in the ‘storage devices’ tab for the ESX host
+----
+image:ST_21.jpg["將 ONTAP Select 磁碟與對應的 ESXi 磁碟進行匹配"]
+
+在 ESXi 或 KVM Shell 中、您可以輸入下列命令來閃爍指定實體磁碟（由其 naa.unique-id 識別）的 LED。
+
+[role="tabbed-block"]
+====
+.ESXi
+--
+[source, cli]
+----
+esxcli storage core device set -d <naa_id> -l=locator -L=<seconds>
+----
+--
+.KVM
+--
+[source, cli]
+----
+cat /sys/block/<block_device_id>/device/wwid
+----
+--
+====
+
+
+[[multiple-drive-failures-when-using-software-raid]]
+== 使用軟體 RAID 時出現多個磁碟機故障
+
+系統可能會遇到多個磁碟機同時處於故障狀態的情況。系統的行為取決於 Aggregate RAID 保護和故障磁碟機的數量。
+
+RAID4 Aggregate 可以承受一個磁碟故障、RAID-DP Aggregate 可以承受兩個磁碟故障，而 RAID-TEC Aggregate 可以承受三個磁碟故障。
+
+如果故障磁碟數量少於 RAID 類型支援的最大故障數量，且有備用磁碟可用，則重建程序會自動啟動。如果沒有備用磁碟可用，則 Aggregate 會以降級狀態提供資料服務，直到新增備用磁碟為止。
+
+如果故障磁碟的數量超過 RAID 類型支援的最大故障數量、則本機 plex 會標示為故障、且 Aggregate 狀態會降級。資料是從位於 HA 合作夥伴上的第二個 plex 提供。這表示節點 1 的任何 I/O 要求都會透過叢集互連連接埠 e0e（iSCSI）傳送至實體位於節點 2 上的磁碟。如果第二個 plex 也故障、則 Aggregate 會標示為故障、且資料無法使用。
+
+若要還原正確的資料鏡像，必須刪除並重新建立故障的 plex。請注意，當多磁碟故障導致資料聚合降級時，根聚合也會降級。ONTAP Select 使用根-資料-資料（RDD）分區方案將每個實體磁碟機分割為一個根分割區和兩個資料分割區。因此，遺失一個或多個磁碟可能會影響多個聚合，包括本地根聚合或遠端根聚合的副本，以及本機資料聚合和遠端資料聚合的副本。
+
+在以下範例輸出中，失敗的 plex 會被刪除並重新建立：
+
+[listing]
+----
+C3111E67::> storage aggregate plex delete -aggregate aggr1 -plex plex1
+Warning: Deleting plex "plex1" of mirrored aggregate "aggr1" in a non-shared HA configuration will disable its synchronous mirror protection and disable
+         negotiated takeover of node "sti-rx2540-335a" when aggregate "aggr1" is online.
+Do you want to continue? {y|n}: y
+[Job 78] Job succeeded: DONE
+
+C3111E67::> storage aggregate mirror -aggregate aggr1
+Info: Disks would be added to aggregate "aggr1" on node "sti-rx2540-335a" in the following manner:
+      Second Plex
+        RAID Group rg0, 5 disks (advanced_zoned checksum, raid_dp)
+                                                            Usable Physical
+          Position   Disk                      Type           Size     Size
+          ---------- ------------------------- ---------- -------- --------
+          shared     NET-3.2                   SSD               -        -
+          shared     NET-3.3                   SSD               -        -
+          shared     NET-3.4                   SSD         208.4GB  208.4GB
+          shared     NET-3.5                   SSD         208.4GB  208.4GB
+          shared     NET-3.12                  SSD         208.4GB  208.4GB
+
+      Aggregate capacity available for volume use would be 526.1GB.
+      625.2GB would be used from capacity license.
+Do you want to continue? {y|n}: y
+
+C3111E67::> storage aggregate show-status -aggregate aggr1
+Owner Node: sti-rx2540-335a
+ Aggregate: aggr1 (online, raid_dp, mirrored) (advanced_zoned checksums)
+  Plex: /aggr1/plex0 (online, normal, active, pool0)
+   RAID Group /aggr1/plex0/rg0 (normal, advanced_zoned checksums)
+                                                              Usable Physical
+     Position Disk                        Pool Type     RPM     Size     Size Status
+     -------- --------------------------- ---- ----- ------ -------- -------- ----------
+     shared   NET-1.1                      0   SSD        -  205.1GB  447.1GB (normal)
+     shared   NET-1.2                      0   SSD        -  205.1GB  447.1GB (normal)
+     shared   NET-1.3                      0   SSD        -  205.1GB  447.1GB (normal)
+     shared   NET-1.10                     0   SSD        -  205.1GB  447.1GB (normal)
+     shared   NET-1.11                     0   SSD        -  205.1GB  447.1GB (normal)
+  Plex: /aggr1/plex3 (online, normal, active, pool1)
+   RAID Group /aggr1/plex3/rg0 (normal, advanced_zoned checksums)
+                                                              Usable Physical
+     Position Disk                        Pool Type     RPM     Size     Size Status
+     -------- --------------------------- ---- ----- ------ -------- -------- ----------
+     shared   NET-3.2                      1   SSD        -  205.1GB  447.1GB (normal)
+     shared   NET-3.3                      1   SSD        -  205.1GB  447.1GB (normal)
+     shared   NET-3.4                      1   SSD        -  205.1GB  447.1GB (normal)
+     shared   NET-3.5                      1   SSD        -  205.1GB  447.1GB (normal)
+     shared   NET-3.12                     1   SSD        -  205.1GB  447.1GB (normal)
+10 entries were displayed..
+----
+[NOTE]
+====
+若要測試或模擬一個或多個磁碟機故障,請使用 `storage disk fail -disk NET-x.y -immediate`命令。如果系統中有備援磁碟機,Aggregate 將開始重建。您可以使用命令 `storage aggregate show`檢查重建狀態。您可以使用 ONTAP Deploy 移除模擬故障的磁碟機。請注意,ONTAP 已將該磁碟機標記為 `Broken`。該磁碟機實際上並未損壞,可以使用 ONTAP Deploy 將其重新新增。若要清除 Broken 標籤,請在 ONTAP Select CLI 中輸入以下命令:
+
+[listing]
+----
+set advanced
+disk unfail -disk NET-x.y -spare true
+disk show -broken
+----
+最後一條命令的輸出應該為空。
+
+====
+
+
+[[virtualized-nvram]]
+== 虛擬化 NVRAM
+
+NetApp FAS 系統通常配備一塊實體 NVRAM PCI 卡。這塊卡片效能卓越，內建非揮發性快閃記憶體，可大幅提升寫入效能。其原理是使 ONTAP 能夠立即向客戶端確認收到的寫入資料。此外，它還可以安排將修改後的資料區塊移回速度較慢的儲存媒體，這一過程稱為 destaging。
+
+普通系統通常不配備此類設備。因此，NVRAM 卡的功能已虛擬化，並放置在 ONTAP Select 系統開機磁碟的一個分割區中。正因如此，執行個體的系統虛擬磁碟的放置位置至關重要。

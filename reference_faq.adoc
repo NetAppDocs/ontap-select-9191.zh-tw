@@ -1,0 +1,329 @@
+---
+sidebar: sidebar 
+permalink: reference_faq.html 
+keywords: faq, frequently asked questions 
+summary: 尋找 ONTAP Select 常見問題的解答。 
+---
+= ONTAP Select 常見問題解答
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+您可以找到有關 ONTAP Select 的常見問題解答。
+
+[NOTE]
+====
+從 ONTAP Select 9.14.1 開始，已復原對 KVM 虛擬機器管理程式的支援。先前，ONTAP Select 9.10.1 移除了在 KVM Hypervisor 上部署新叢集的支援，而 ONTAP Select 9.11.1 則移除了對現有 KVM 叢集和主機的管理支援（離線或刪除除外）。
+
+====
+
+
+[[general]]
+== 一般
+
+這裡有一些常見問題及答案。
+
+.ONTAP Select Deploy 和 ONTAP Select 有什麼差別？
+ONTAP Select Deploy 是用於建立 ONTAP Select 叢集的實用程式。目前、ONTAP Select Deploy 是建立正式作業叢集的唯一方法。ONTAP Select Deploy 也可用於建立評估 Select 叢集、以便客戶測試並記錄正式作業部署的實際步驟。ONTAP Select Deploy 也可以使用具有足夠容量的適當容量層授權、將評估叢集轉換為正式作業叢集、以涵蓋評估期間所耗用的空間。
+
+ONTAP Select Deploy 是一個包含 ONTAP Select 鏡像的虛擬機器。在叢集安裝過程中,ONTAP Select Deploy 會執行多項檢查,以確保符合 ONTAP Select 的最低系統需求。ONTAP Select Deploy 虛擬機器和 Select 叢集可以分別升級。
+
+.如何疑難排解 ONTAP Select 的效能問題？
+與 FAS 上的 ONTAP 類似，效能資料應使用 perfstat 公用程式收集。以下是一個範例命令：
+
+[listing]
+----
+perfstat8 –i N,m -t <sample time in minutes> --verbose --nodes=<filer IP> --diag-passwd=abcxyz --mode="cluster-mode" > <name of output file>
+----
+.如何存取 ONTAP Select Deploy 的 Swagger API 頁面？
+[listing]
+----
+http://<Deploy-IP-Address/api/ui
+----
+
+NOTE: API v3 版本與先前的 API 版本不相容。新的 API 程序可在 https://library.netapp.com/ecm/ecm_download_file/ECMLP2845694["Field Portal"^]上取得。
+
+.ONTAP Select VM 能否使用 VMware 或其他第三方快照進行備份？
+不。ONTAP Select VM 使用獨立持久磁碟機，這些磁碟機不包含在基於 VMware 的快照中。備份 ONTAP Select 唯一受支援的方法是 SnapMirror 或 SnapVault。
+
+.如果常見問題中沒有涵蓋我的問題、我應該在哪裡獲得解答？
+聯絡 link:mailto:ng-ses-ontap-select@netapp.com["ng-ses-ontap-select@netapp.com"]。
+
+
+
+[[licenses-installation-upgrades-and-reverts]]
+== 授權、安裝、升級和還原
+
+這裡有幾個關於授權、安裝、升級和還原的問題和答案。
+
+.ONTAP Select 和 ONTAP Select Deploy 可以分別升級嗎？
+是的。ONTAP Select Deploy 實用程式可以獨立於 ONTAP Select 叢集進行升級。同樣，Select 叢集也可以獨立於 ONTAP Select Deploy 實用程式進行升級。
+
+.ONTAP Select 能否使用與 FAS 叢集相同的升級流程進行升級？
+是的、Select 叢集的升級程序與 FAS 叢集的升級程序相同、儘管 ONTAP Select 升級二進位檔案與 ONTAP on FAS 升級二進位檔案是分開下載的。
+
+.ONTAP Select 能否像 FAS 叢集一樣使用相同的步驟進行還原？
+是的，ONTAP Select 叢集的還原程序與 FAS 叢集的還原程序幾乎完全相同。但也存在一些差異：
+
+* 只有升級後的 ONTAP Select 執行個體才能還原，而且只能還原到原始安裝版本。新安裝的 ONTAP Select 無法還原到舊版程式碼版本，即使 ONTAP Select 通常支援該舊版本。
+* 對於使用軟體 RAID 的 ONTAP Select (KVM) 和 ONTAP Select (ESXi)，無法回溯到不支援軟體 RAID 的早期版本。此外，在 ESXi 上全新安裝的 ONTAP Select 9.5 或更新版本會使用 VMXNET3 網路驅動程式，並在可能的情況下使用 vNVMe 驅動程式。這些新安裝無法回復到 ONTAP Select 的早期版本。
+* 如果 ONTAP Select VM 也升級到了大型執行個體（使用 Premium XL 授權），則不支援還原至 9.6 之前的版本，因為早期版本中沒有大型執行個體功能。
+
+
+.ONTAP MetroCluster SDS 是否至少需要 Premium 授權？
+是的。
+
+.ONTAP Select 叢集網路組態是否可在安裝後變更？
+ONTAP Select Deploy 可透過 UI、CLI 或 REST API 提供的叢集重新整理作業來識別以下 ONTAP Select 叢集內容的變更：
+
+* 網路組態（IP 位址、DNS、NTP、網路遮罩和閘道）
+* ONTAP Select 叢集、節點名稱和版本
+
+
+以下 ONTAP Select VM 變更也會被辨識：
+
+* ONTAP Select 虛擬機器名稱和狀態變更（例如，線上或離線）
+* 主機網路名稱和儲存資源池名稱變更
+
+
+升級到 ONTAP Select Deploy 2.6 後，對於已部署但配置未更改的 ONTAP Select 叢集，將支援這些變更。換句話說，如果上述 ONTAP Select 叢集屬性是透過 System Manager 或 vCenter 變更的，則升級到 ONTAP Select Deploy 2.6 無法解決這些不一致問題。必須先回滾 ONTAP Select 屬性變更，ONTAP Select Deploy 才能將其唯一的中繼資料新增至每個 ONTAP Select VM。
+
+.安裝後可以變更 ONTAP Select Deploy 網路組態嗎？
+不支援在 Deploy 執行個體於環境中執行後修改其網路詳細資訊。如需詳細資訊，請參閱知識庫文章 link:https://kb.netapp.com/onprem/ontap/ONTAP_Select/Modifying_DNS_configuration_of_ONTAP_Deploy_instance["修改 ONTAP Deploy 執行個體的 DNS 組態"^]。
+
+.Deploy 如何偵測 ONTAP Select 授權是否已續約？
+所有授權的方法都相同，但具體細節會因授權是 Capacity Tier 或 Capacity Pool 授權而有所不同。
+
+* ONTAP Select Deploy 會偵測許可證和支援合約是否已透過從 NetApp 購買更新的授權檔案進行續約。許可證檔案（.NLF）包含容量、開始日期和結束日期；該檔案在 link:https://mysupport.netapp.com/site/["NetApp 支援網站"^] 生成，然後在 Deploy 伺服器上更新。
++
+
+NOTE: 您可以使用 *Add* 和 *Update* 功能將 NLF 載入到 Deploy 伺服器中。*Add* 會將新授權新增至伺服器，而 *Update* 會使用容量、節點授權（標準版、進階版、進階 XL 版）、支援開始和結束日期（容量層授權）或訂閱開始和結束日期（容量池授權）等資訊更新現有檔案。
+
++
+
+CAUTION: 請勿嘗試修改授權檔案。這樣做會使安全金鑰失效，並使授權失效。
+
+* * 容量層級授權 * 是與 ONTAP Select 節點序號綁定的單節點永久授權。它與單獨的支援合約一起銷售。雖然授權是永久有效的，但要存取 ONTAP Select 升級並獲得 NetApp 技術支援，必須續約支援合約。更改授權參數（例如容量或節點大小）也需要有效的支援合約。
++
+購買 Capacity Tier 授權更新、參數變更或支援合約續約時，需要在訂單中提供節點序號。Capacity Tier 節點序號為九位數，以數字「32」開頭。
+
++
+購買完成後，產生授權檔案，然後使用 *Update* 功能將其上傳到 Deploy 伺服器。
+
+* *Capacity Pool license* 是一種訂閱服務，可讓您使用特定容量池和節點規格（standard、premium、premium XL）來部署一個或多個叢集。此訂閱服務包含在指定期限內使用授權和獲得支援的權利。授權使用權和支援合約均有明確的生效日期和終止日期。
+
+
+.Deploy 如何偵測節點是否已續約授權或支援合約？
+Deploy 透過購買、產生和上傳更新的授權檔案來偵測續約的授權和支援合約。
+
+如果 Capacity Tier 支援合約結束日期已過，節點可以繼續運作，但您必須先更新支援合約，才能下載和安裝 ONTAP 更新或致電 NetApp 技術支援尋求協助。
+
+如果 Capacity Pool 訂閱到期，系統會先發出警告，但 30 天後，如果系統關閉，則在 Deploy 伺服器上安裝更新的訂閱之前，系統不會重新啟動。
+
+
+
+[[storage]]
+== 儲存
+
+這裡有一些關於儲存設備的問題和答案。
+
+.單一 ONTAP Select Deploy 執行個體能否在 ESXi 和 KVM 上建立叢集？
+是的。ONTAP Select Deploy 可以安裝在 KVM 或 ESXi 上，兩種安裝方式都可以在任一 Hypervisor 上建立 ONTAP Select 叢集。
+
+.在 ESXi 上使用 ONTAP Select 是否需要 vCenter？
+如果 ESXi 主機已獲得正確許可，則無需由 vCenter 伺服器管理。但是，如果主機由 vCenter 伺服器管理，則必須配置 ONTAP Select Deploy 以使用該 vCenter 伺服器。換句話說，如果 ESXi 主機正在由 vCenter 伺服器進行主動管理，則無法在 ONTAP Select Deploy 中將其配置為獨立模式。請注意，ONTAP Select Deploy VM 依賴於 vCenter 追蹤因 vMotion 或 VMware HA 事件而導致的 ESXi 主機之間的所有 ONTAP Select VM 遷移。
+
+.什麼是軟體 RAID？
+ONTAP Select 可以使用沒有硬體 RAID 控制器的伺服器。在這種情況下、RAID 功能透過軟體實作。使用軟體 RAID 時、支援 SSD 和 NVMe 磁碟機。ONTAP Select 開機和核心磁碟仍必須位於虛擬化分割區（儲存資源池或資料存放區）內。ONTAP Select 使用 RD2（root-data-data 分割）來分割 SSD。因此、ONTAP Select 根分割區位於用於資料集合體的相同實體磁碟上。不過、根 Aggregate 以及開機和核心虛擬化磁碟不會計入容量授權。
+
+AFF/FAS 上的所有 RAID 方法也適用於 ONTAP Select。包括 RAID 4、RAID DP 和 RAID-TEC。所需的 SSD 最少數量取決於所選的 RAID 配置類型。最佳實務建議至少配備一塊備用 SSD。備用碟和奇偶校驗盤不計入容量授權。
+
+.軟體 RAID 與硬體 RAID 組態有何不同？
+軟體 RAID 是 ONTAP 軟體堆疊中的一個層。軟體 RAID 提供更強大的管理控制功能,因為實體磁碟機被分割,並以原始磁碟的形式在 ONTAP Select 虛擬機器中使用。而硬體 RAID 通常只有一個大型 LUN,可以分割為多個 VMDISK,這些 VMDISK 可在 ONTAP Select 中查看。軟體 RAID 是一個可選功能,可以取代硬體 RAID 使用。
+
+軟體 RAID 的部分需求如下：
+
+* 支援 ESXi 和 KVM
++
+** 從 ONTAP Select 9.14.1 開始，已復原對 KVM 虛擬機器管理程式的支援。先前，ONTAP Select 9.10.1 已移除對 KVM 虛擬機器管理程式的支援。
+
+
+* 支援的實體磁碟大小：200GB – 32TB
+* 僅支援 DAS 組態
+* 支援 SSD 或 NVMe
+* 需要 Premium 或 Premium XL ONTAP Select 授權
+* 硬體 RAID 控制器應不存在或已停用，或應以 SAS HBA 模式運作
+* 必須使用基於專用 LUN 的 LVM 儲存資源池或資料存放區來儲存系統磁碟：核心傾印、開機 / NVRAM 和 Mediator 。
+
+
+.ONTAP Select for KVM 是否支援多個 NIC 連結？
+在 KVM 上安裝時，必須使用單一 bond 和單一 bridge。具有兩個或四個實體連接埠的主機應將所有連接埠置於同一個綁定中。
+
+.ONTAP Select 如何報告或警示 Hypervisor 主機中故障的實體磁碟或 NIC？ONTAP Select 是否從 Hypervisor 擷取此資訊，或是應在 Hypervisor 層級設定監控？
+使用硬體 RAID 控制器時， ONTAP Select 基本上無法感知底層伺服器問題。如果伺服器按照我們的最佳實踐進行配置，則應具備一定的備援度。我們建議使用 RAID 5/6 以應對硬碟故障。對於軟體 RAID 配置， ONTAP 負責發出磁碟故障警報，並在有備用硬碟的情況下啟動磁碟重建。
+
+為避免網路層出現單點故障，建議至少使用兩張實體網路卡。NetApp 建議資料、管理及內部連接埠群組配置網路卡綁定（NIC teaming 或 bonding），並在綁定或群組內使用兩個或多個上行鏈路。此配置可確保在發生上行鏈路故障時，虛擬交換機會將流量從故障上行鏈路轉移到網卡組中正常的上行鏈路。有關推薦網路配置的詳細資訊，請參閱 link:reference_plan_best_practices.html#networking["最佳實務總結：網路"]。
+
+對於雙節點或四節點叢集，所有其他錯誤均由 ONTAP HA 處理。如果需要更換 Hypervisor 伺服器，並且需要使用新伺服器重建 ONTAP Select 叢集，請參閱_我可以恢復 ONTAP Select 節點嗎？_。
+
+.我可以恢復 ONTAP Select 節點嗎？
+如果您需要恢復 ONTAP Select 節點，例如 ONTAP Select 虛擬機器或主機完全遺失，或者單節點叢集被意外刪除，請聯絡 NetApp 技術支援。如需詳細資訊，請參閱知識庫文章 link:https://kb.netapp.com/on-prem/ontap/ontap-select/Select-KBs/ONTAP_Select_node_VM_recovery_in_case_of_disaster["發生災難時的 ONTAP Select 節點 VM 恢復"^]。
+
+.ONTAP Select 支援的最大資料存放區大小是多少？
+所有組態（包括 vSAN）均支援每個 ONTAP Select 節點 400TB 的儲存設備。
+
+當安裝在大於支援的最大容量的資料存放區上時，必須在產品設定期間使用 Capacity Cap。
+
+.如何增加 ONTAP Select 節點的容量？
+ONTAP Select Deploy 包含一個儲存新增工作流程，支援在 ONTAP Select 節點上執行容量擴充操作。您可以使用相同資料儲存區中的空間（如果仍有可用空間）來擴充受管理的儲存空間，也可以從單獨的資料儲存區中新增空間。不支援在同一 Aggregate 中混合使用本機資料儲存區和遠端資料儲存區。
+
+儲存新增功能也支援軟體 RAID。但是,使用軟體 RAID 時,必須在 ONTAP Select VM 中新增額外的實體磁碟機。此時的儲存新增方式類似管理 FAS 或 AFF 陣列。使用軟體 RAID 為 ONTAP Select 節點新增儲存時,必須考慮 RAID 群組大小和磁碟機大小。
+
+.ONTAP Select 是否支援 vSAN 或外部陣列類型的資料存放區？
+ONTAP Select Deploy 和 ONTAP Select for ESXi 支援使用 vSAN 或外部陣列類型的資料存放區作為其儲存資源池來配置 ONTAP Select 單節點叢集。
+
+ONTAP Select Deploy 和 ONTAP Select for KVM 支援使用外部陣列上的共享的邏輯儲存資源池類型來組態 ONTAP Select 單節點叢集。儲存資源池可以基於 iSCSI 或 FC/FCoE。不支援其他類型的儲存資源池。
+
+支援共享儲存上的多節點 HA 叢集。
+
+.ONTAP Select 是否支援 vSAN 或其他共用外部儲存設備（包括某些 HCI 堆疊）上的多節點叢集？
+ESXi 和 KVM 皆支援使用外部儲存設備的多節點叢集（多節點 vNAS）。在同一叢集中不支援混合使用不同的虛擬機器管理程式。共享儲存設備上的 HA 架構仍然意味著 HA 配對中的每個節點都擁有其合作夥伴資料的鏡射複本。然而，與依賴 VMware HA 或 KVM Live Motion 的單節點叢集相比，多節點叢集能夠帶來 ONTAP 不中斷營運的優勢。
+
+儘管 ONTAP Select Deploy 支援在同一台主機上運行多個 ONTAP Select 虛擬機，但它不允許這些實例在叢集建立期間屬於同一個 ONTAP Select 叢集。對於 ESXi 環境，NetApp 建議建立虛擬機器反親和性規則，以防止 VMware HA 嘗試將多個 ONTAP Select 虛擬機器從同一個 ONTAP Select 叢集遷移到單一 ESXi 主機上。此外，如果 ONTAP Select Deploy 偵測到管理（使用者發起）vMotion 或 ONTAP Select 虛擬機器的即時遷移導致違反最佳實務（例如兩個 ONTAP Select 節點最終位於同一實體主機上），ONTAP Select Deploy 則會在部署 UI 和日誌中發布警報。ONTAP Select Deploy 只能透過叢集刷新作業來獲知 ONTAP Select 虛擬機器的位置，而叢集刷新作業必須由 ONTAP Select Deploy 管理員手動啟動。ONTAP Select Deploy 沒有主動監控功能，警報只能透過部署 UI 或日誌查看。換句話說，此警報無法轉發到集中式監控基礎架構。
+
+.ONTAP Select 是否支援 VMware 的 NSX VXLAN？
+支援 NSX-V VXLAN 連接埠群組。對於多節點高可用性（HA）架構（包括 ONTAP MetroCluster SDS），請確保將內部網路 MTU 配置為 7500 到 8900 之間（而不是 9000），以適應 VXLAN 的開銷。內部網路 MTU 可在叢集部署期間使用 ONTAP Select Deploy 進行設定。
+
+.ONTAP Select 是否支援 KVM 線上遷移？
+在外部陣列儲存資源池上執行的 ONTAP Select VM 支援 virsh 即時移轉。
+
+.vSAN AF 需要 ONTAP Select Premium 嗎？
+不，所有版本都受支援，無論外部陣列或 vSAN 組態是否全部採用快閃記憶體。
+
+.支援哪些 vSAN FTT/FTM 設定？
+Select VM 繼承 vSAN 資料儲存區儲存原則、且 FTT/FTM 設定沒有限制。不過請注意、視 FTT/FTM 設定而定、ONTAP Select VM 大小可能遠大於設定期間所設定的容量。ONTAP Select 使用在設定期間建立的完整 Eager Zeroed VMDK。為避免影響使用相同共享資料儲存區的其他 VM、請務必在資料儲存區中提供足夠的可用容量、以容納從 Select 容量和 FTT/FTM 設定衍生的實際 Select VM 大小。
+
+.如果多個 ONTAP Select 節點分屬不同的 Select 叢集，它們能否在同一台主機上運作？
+僅針對 vNAS 組態，可以在同一主機上設定多個 ONTAP Select 節點，前提是這些節點不屬於同一個 ONTAP Select 叢集。DAS 組態不支援此操作，因為同一實體主機上的多個 ONTAP Select 節點會競爭存取 RAID 控制器。
+
+.能否讓只有一個 10GE 連接埠的主機執行 ONTAP Select，並且它是否同時適用於 ESXi 和 KVM？
+您可以使用單一 10GE 連接埠連接到外部網路。但是，NetApp 建議僅在資源受限的小型機箱環境中使用此方法。ESXi 和 KVM 均支援此功能。
+
+.要在 KVM 上進行即時移轉，還需要執行哪些其他程序？
+您必須在參與即時移轉的每台主機上安裝並執行開源的 CLVM 和 pacemaker （pcs） 元件。這是為了在每台主機上存取相同的 Volume 群組。
+
+
+
+[[vcenter]]
+== vCenter
+
+有幾個關於 VMware vCenter 的問題和答案。
+
+.ONTAP Select Deploy 如何與 vCenter 通訊，以及應該開啟哪些防火牆連接埠？
+ONTAP Select Deploy 使用 VMware VIX API 與 vCenter 、 ESXi 主機或兩者進行通訊。VMware 文件指出，與 vCenter Server 或 ESXi 主機的初始連線是使用 TCP 連接埠 443 上的 HTTPS/SOAP 完成。此連接埠用於透過 TLS/SSL 進行安全 HTTP 通訊。其次，會在 TCP 連接埠 902 上的通訊端開啟與 ESXi 主機的連線。透過此連線傳輸的資料會使用 SSL 加密。此外、 ONTAP Select Deploy 會發出  `PING` 命令、以驗證您指定的 IP 位址上是否有 ESXi 主機回應。
+
+ONTAP Select Deploy 還必須能夠與 ONTAP Select 節點和叢集管理 IP 位址進行通訊，如下所示：
+
+* Ping
+* SSH（port 22）
+* SSL（port 443）
+
+
+對於雙節點叢集，ONTAP Select Deploy 會裝載叢集信箱。每個 ONTAP Select 節點都必須能夠透過 iSCSI（連接埠 3260）存取 ONTAP Select Deploy。
+
+對於多節點叢集，內部網路必須完全開放（不能使用 NAT 或防火牆）。
+
+.ONTAP Select Deploy 需要哪些 vCenter 權限才能建立 ONTAP Select 叢集？
+所需的 vCenter 權限清單請見此處：link:reference_plan_ots_vcenter.html["VMware vCenter 伺服器"]。
+
+
+
+[[ha-and-clusters]]
+== HA 與叢集
+
+有幾個關於 HA 配對和叢集的問題與解答。
+
+.四節點、六節點或八節點叢集與雙節點 ONTAP Select 叢集有什麼差別？
+與主要用於建立叢集的四節點、六節點和八節點叢集不同，雙節點叢集持續依賴 ONTAP Select Deploy VM 來實現 HA 仲裁。如果 ONTAP Select Deploy VM 不可用，則容錯移轉服務將被停用。
+
+.什麼是 MetroCluster SDS？
+MetroCluster SDS 是一種較低成本的同步複寫選項，屬於 NetApp 的 MetroCluster Business Continuity 解決方案類別。它僅能搭配 ONTAP Select 使用，不同於可在 FAS Hybrid Flash、AFF 以及 NetApp Private Storage for Cloud 上使用的 NetApp MetroCluster。
+
+.MetroCluster SDS 與 NetApp MetroCluster 有何不同？
+MetroCluster SDS 提供同步複寫解決方案，屬於 NetApp MetroCluster 解決方案範疇。然而，一個關鍵區別在於連線類型（僅支援 IP 網路，而非 FC 和 IP）。
+
+.雙節點 ONTAP Select 叢集和雙節點 ONTAP MetroCluster SDS 有什麼差別？
+雙節點叢集是指兩個節點位於同一資料中心且彼此距離在 300 公尺以內的叢集。通常情況下，兩個節點都透過交換器間連結連接到同一網路交換器或一組網路交換器。
+
+雙節點 MetroCluster SDS 是指由實體分離的節點（不同房間、不同建築物或不同資料中心）組成的叢集，每個節點的上行鏈路連線都連接至獨立的網路交換器。雖然 MetroCluster SDS 不需要專用硬體，但環境應符合最低延遲需求（5 毫秒 RTT 和 5 毫秒抖動，總計最多 10 毫秒）。
+
+MetroCluster SDS 是一項進階功能，需要 Premium 或 Premium XL 授權。Premium 授權支援建立小型和中型 VM，以及 HDD 和 SSD 媒體。所有這些組態均受支援。
+
+.ONTAP MetroCluster SDS 是否需要本地儲存 （DAS）？
+ONTAP MetroCluster SDS 支援所有類型的儲存配置（DAS 和 vNAS）。
+
+.ONTAP MetroCluster SDS 是否支援軟體 RAID？
+是的，KVM 和 ESXi 都支援使用 SSD 媒體進行軟體 RAID。
+
+.ONTAP MetroCluster SDS 是否同時支援 SSD 和機械硬碟？
+是的，雖然需要 Premium 授權，但此授權支援小型和中型 VM 以及 SSD 和旋轉式媒體。
+
+.ONTAP MetroCluster SDS 是否支援四節點以上規模的叢集？
+不，只有具有 Mediator 的雙節點叢集才能配置為 MetroCluster SDS。
+
+.ONTAP MetroCluster SDS 有哪些要求？
+具體要求如下：
+
+* 三個資料中心（一個用於 ONTAP Select Deploy Mediator，每個節點一個）
+* 5 毫秒 RTT 和 5 毫秒抖動，總計最大 10 毫秒
+* ONTAP Select Deploy Mediator 與每個 ONTAP Select 節點之間的往返時間（RTT）為 125 毫秒，最小頻寬為 5 Mbps
+* Premium 或 Premium XL 授權
+
+
+.ONTAP Select 是否支援 vMotion 或 VMware HA？
+在 vSAN 資料存放區或外部陣列資料存放區（換句話說、vNAS 部署）上執行的 ONTAP Select VM 支援 vMotion、DRS 和 VMware HA 功能。
+
+.ONTAP Select 是否支援儲存 vMotion？
+所有組態均支援 Storage vMotion，包括單節點和多節點 ONTAP Select 叢集以及 ONTAP Select Deploy VM。Storage vMotion 可用於在不同的 VMFS 版本之間移轉 ONTAP Select 或 ONTAP Select Deploy VM（例如從 VMFS 5 移轉到 VMFS 6），但不限於此使用案例。最佳實務做法是在啟動 Storage vMotion 作業之前關閉 VM。在 Storage vMotion 作業完成後，ONTAP Select Deploy 必須執行以下作業：
+
+[listing]
+----
+cluster refresh
+----
+
+NOTE: 不支援在不同類型的資料存放區之間進行儲存 vMotion 作業。換句話說、不支援在 NFS 類型資料存放區與 VMFS 資料存放區之間進行儲存 vMotion 作業。一般而言、不支援在外部資料存放區與 DAS 資料存放區之間進行儲存 vMotion 作業。
+
+.ONTAP Select 節點之間的 HA 流量能否透過不同的 vSwitch 和/或隔離的實體連接埠運行，以及/或在 ESXi 主機之間使用點對點 IP 纜線？
+這些組態不受支援。ONTAP Select 無法了解承載用戶端流量的實體網路上行鏈路狀態。因此、ONTAP Select 依賴 HA 活動訊號來確保 VM 可同時供用戶端及其對等節點存取。當實體連線中斷時、HA 活動訊號遺失會導致自動容錯移轉至另一個節點、這是預期的行為。
+
+將 HA 流量隔離在單獨的實體基礎架構上，可能會導致 Select VM 能夠與其對等項目通訊，但無法與其用戶端通訊。這會阻止自動 HA 程序，並導致資料無法使用，直到叫用手動容錯移轉為止。
+
+
+
+[[mediator-service]]
+== Mediator 服務
+
+有幾個關於中介程式服務的問題和答案。
+
+.什麼是 Mediator 服務？
+雙節點叢集持續依賴 ONTAP Select Deploy VM 來實現 HA 仲裁。參與雙節點 HA 仲裁協商的 ONTAP Select Deploy VM 被標記為 Mediator VM。
+
+.Mediator 服務可以是遠端的嗎？
+是的。ONTAP Select Deploy 作為雙節點 HA 配對的中介器，支援高達 500 毫秒 RTT 的 WAN 延遲，並且需要至少 5Mbps 的頻寬。
+
+.Mediator 服務使用什麼協定？
+Mediator 流量為 iSCSI，來源位址為 ONTAP Select 節點管理 IP 位址，終止位址為 ONTAP Select Deploy IP 位址。請注意，使用雙節點叢集時，ONTAP Select 節點管理 IP 位址不能使用 IPv6。
+
+.我可以將一個 Mediator 服務用於多個雙節點 HA 叢集嗎？
+是的。每個 ONTAP Select Deploy VM 都可以作為多達 100 個雙節點 ONTAP Select 叢集的通用中介服務。
+
+.部署後能否變更 Mediator 服務位置？
+是的。可以使用另一個 ONTAP Select Deploy VM 來託管 Mediator 服務。
+
+.ONTAP Select 是否支援帶有（或不帶）Mediator 的延伸叢集？
+在延伸 HA 部署模式中，僅支援具有 Mediator 的雙節點叢集。

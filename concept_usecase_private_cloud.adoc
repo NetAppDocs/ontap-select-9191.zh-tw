@@ -1,0 +1,27 @@
+---
+sidebar: sidebar 
+permalink: concept_usecase_private_cloud.html 
+keywords: ontap select, private cloud 
+summary: ONTAP Select 非常適合支援組織內的一個或多個私有雲。一個常見的用例是為基於通用伺服器建置的私有雲提供儲存服務。 
+---
+= ONTAP Select 支援私有雲和資料中心
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+ONTAP Select 非常適合支援組織內的一個或多個私有雲。一個常見的用例是為基於通用伺服器建置的私有雲提供儲存服務。
+
+與公有雲類似，私有雲也提供靈活性以及快速的部署和拆卸功能。此外，私有雲還提供更高的安全性和控制力。
+
+下圖展示了儲存叢集如何為 ONTAP Select VM 提供運算和本機連接的儲存設備，這些 VM 再為應用程式堆疊的上游提供儲存服務。從 SVM 的配置到應用程式 VM 的部署和組態設定，整個工作流程都透過私有雲協調架構自動化。
+
+這是一個服務導向的私有雲模型。使用 HA 版本的 ONTAP Select 可獲得與高成本 FAS 陣列相同的 ONTAP 體驗。儲存伺服器資源完全由 ONTAP Select VM 使用，而應用程式 VM 則託管在獨立的實體基礎架構上。
+
+*建置在 DAS 上的私有雲*
+
+image:PrivateCloud_01.jpg["建置在 DAS 上的私有雲"]

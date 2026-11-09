@@ -1,0 +1,35 @@
+---
+sidebar: sidebar 
+permalink: task_api_access_doc_page.html 
+keywords: rest api, deploy rest api, rest, deploy documentation, access, accessing 
+summary: 您必須存取 ONTAP Select Deploy 線上文件頁面才能顯示 API 文件，以及手動發出 API 呼叫。 
+---
+= 存取 ONTAP Select Deploy 文件頁面
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+您必須存取 ONTAP Select Deploy 線上文件頁面才能顯示 API 文件，以及手動發出 API 呼叫。
+
+.開始之前
+您必須具備以下條件：
+
+* ONTAP Select Deploy 虛擬機器的 IP 位址或網域名稱
+* 管理員的使用者名稱和密碼
+
+
+.步驟
+. 在瀏覽器中輸入 URL，然後選取 *Enter*：
++
+`\https://<ip_address>/api/ui`
+
+. 使用系統管理員使用者名稱和密碼登入。
+
+
+.結果
+Deploy 文件網頁會顯示在頁面底部按類別組織的呼叫。

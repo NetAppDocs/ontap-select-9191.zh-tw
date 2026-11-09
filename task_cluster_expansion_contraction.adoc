@@ -1,0 +1,155 @@
+---
+sidebar: sidebar 
+permalink: task_cluster_expansion_contraction.html 
+keywords: cluster, expand, expansion, contract, contraction, six, eight, node deployment workflow, workflow, deployment steps 
+summary: 從 ONTAP Select 9.15.1 開始，您可以增加或減少現有叢集的大小。 
+---
+= 在 ESXi 或 KVM 主機上擴充或縮減 ONTAP Select 叢集
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+增加或減少現有 ONTAP Select 叢集（適用於 ESXi 和 KVM 虛擬機器管理程式主機）的叢集規模。對於這兩種主機類型，您可以以 4 到 12 個節點為增量增加或減少叢集規模。
+
+ESXi 和 KVM 主機不支援下列叢集擴充和收縮：
+
+* 從單節點或雙節點叢集擴充至六節點、八節點、十節點或十二節點叢集。
+* 從 6、8、10 或 12 個節點的叢集收縮為 1 或 2 個節點的叢集。
+
+
+[NOTE]
+====
+若要將叢集中的節點數變更為叢集擴充或收縮不支援的大小、您需要執行下列任務：
+
+. 使用 ONTAP Select Deploy 管理實用程式提供的link:task_cli_deploy_cluster.html["CLI"]或link:task_deploy_cluster.html["Web UI"]部署新的多節點叢集。
+. 如果適用，請使用 link:https://docs.netapp.com/us-en/ontap/data-protection/snapmirror-disaster-recovery-concept.html["SnapMirror 複製"^] 將資料遷移到新叢集。
+
+
+====
+您可以使用 CLI、API 或 Web 介面從 ONTAP Select Deploy 啟動叢集擴充和收縮程序。
+
+
+
+[[hardware-and-storage-considerations]]
+== 硬體和儲存考量
+
+下列 KVM 和 ESXi Hypervisor 主機支援叢集擴充和收縮功能。
+
+[role="tabbed-block"]
+====
+.ESXi
+--
+從 ONTAP Select 9.15.1 開始，ESXi Hypervisor 主機支援叢集擴充和縮小。
+
+下列 ESXi Hypervisor 版本支援叢集擴充與收縮：
+
+* ESXi 9.0
+* ESXi 8.0 U3
+* ESXi 8.0 U2
+* ESXi 8.0 U1
+* ESXi 8.0 GA
+
+
+--
+.KVM
+--
+從 ONTAP Select 9.17.1 開始，KVM 虛擬機器管理程式主機支援叢集擴充和收縮。
+
+以下 KVM Hypervisor 版本支援叢集擴充和縮小：
+
+* Red Hat Enterprise Linux (RHEL) 64 位元 10.1、10.0、9.7、9.6、9.5、9.4、9.3、9.2、9.1、9.0、8.8、8.7 和 8.6
+* Rocky Linux 10.1、10.0、9.7、9.6、9.5、9.4、9.3、9.2、9.1、9.0、8.9、8.8、8.7 和 8.6
+
+
+--
+====
+
+
+[[expand-the-cluster]]
+== 擴充叢集
+
+使用叢集擴充功能來增加現有 ONTAP Select 叢集的大小。
+
+您可以依下列增量增加 ESXi 或 KVM 主機上現有叢集的大小：
+
+* 從四個節點到六個、八個、十個或十二個節點
+* 從六個節點到八個、十個或十二個節點
+* 從八個節點到十個或十二個節點
+* 從 10 到 12 個節點
+
+
+.關於此任務
+為準備叢集擴展，需要將新的 ESXi 和 KVM 主機新增至清單中，並指派新節點的詳細資訊。在開始叢集擴展程序之前，會進行網路預檢查以驗證所選的內部網路。
+
+.開始之前
+* 部署多節點叢集時、您應該熟悉網路連線檢查器。您可以使用 link:task_adm_connectivity.html["Web UI"] 或 link:task_cli_connectivity.html["CLI"] 執行網路連線檢查器。
+* 請確認您已取得新節點的授權詳細資訊。
+
+
+.步驟
+. 使用系統管理員帳戶登入 Deploy 公用程式 Web 使用者介面。
+. 選擇頁面頂部的 *Cluster* 選項卡，然後從清單中選擇所需的叢集。
+. 在叢集詳細資料頁面上，選取頁面右側的齒輪圖示，然後選取 *Expand Cluster* 。
+. 導覽至 *HA Pair 4* 區段。
+. 請為第四個高可用性（HA）配對選擇以下配對組態詳細資料：
++
+** 執行個體類型
+** 節點名稱
+** 相關的 Hypervisor 主機
+** 節點 IP 位址
+** 授權
+** 網路組態
+** 儲存組態（RAID 類型和儲存資源池）
+
+
+. 選擇 *Save HA Pair* 以儲存組態詳細資料。
+. 提供 ONTAP 認證資料，然後選取 *Expand Cluster* 。
+. 選擇 *Next*，然後選擇 *Run* 來執行網路預先檢查。
++
+網路預先檢查會驗證為 ONTAP 叢集流量選取的內部網路是否正常運作。
+
+. 選擇 *Expand Cluster* 開始叢集擴充程序，然後在對話方塊中選擇 *OK*。
++
+叢集擴充最多可能需要 45 分鐘。
+
+. 監控多步驟叢集擴充程序，以確認叢集已成功擴充。
+. 請參閱 *Events* 選項卡，以了解操作進度的定期更新。頁面會定期自動重新整理。
+
+
+.完成後
+擴展叢集後、您應該link:task_cli_clusters.html["備份 ONTAP Select Deploy 組態資料"]。
+
+
+
+[[contract-the-cluster]]
+== 收縮叢集
+
+使用叢集收縮功能來減少現有 ONTAP Select 叢集的大小。
+
+您可以按下列增量來減少 ESXi 或 KVM 主機上現有叢集的大小：
+
+* 從十二個節點到十個、八個、六個或四個節點
+* 從十個節點到八個、六個或四個節點
+* 從八個節點到六個或四個節點
+* 從六個節點到四個節點
+
+
+.關於此任務
+在程序期間，選擇叢集中所需的 HA 配對節點，為叢集縮減做好準備。
+
+.步驟
+. 使用系統管理員帳戶登入 Deploy 公用程式 Web 使用者介面。
+. 選擇頁面頂部的 *Cluster* 選項卡，然後從清單中選擇所需的叢集。
+. 在叢集詳細資料頁面上，選取頁面右側的齒輪圖示，然後選取 *Contract Cluster*。
+. 選擇要移除的任何 HA 配對的 HA 配對組態詳細資料，並提供 ONTAP 認證資料，然後選取 *Contract Cluster* 。
++
+叢集可能需要長達 30 分鐘才能縮減。
+
+. 監控多步驟叢集收縮程序，以確認叢集已成功收縮。
+. 請參閱 *Events* 選項卡，以了解操作進度的定期更新。頁面會定期自動重新整理。
+

@@ -1,0 +1,69 @@
+---
+sidebar: sidebar 
+permalink: deploy-evaluation-ontap-select-ovf-template.html 
+keywords: ontap, select, ovf, template, deployment, evaluation, license 
+summary: 您可以部署單一節點 ONTAP Select 叢集的 90 天評估執行個體。 
+---
+= 部署一個為期 90 天的 ONTAP Select 叢集評估執行個體
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+您可以使用 OVF 範本在 VMware ESXi 上部署 ONTAP Select 叢集的 90 天評估執行個體，叢集規模從單節點到 99 個節點不等。無論您是現有客戶還是新客戶，都可以下載評估授權。例如，如果您是現有客戶，並且希望在購買授權之前試用新的組態，即可使用此評估授權。
+
+.關於此任務
+* 您無需從 NetApp 取得序號或儲存容量授權。
+* 您可以為使用者資料分配與購買授權相同的儲存容量。
+* 您只能使用 vCenter 帳戶部署 OVF 範本。目前不支援直接安裝到 ESXi 主機。
+* 您必須使用 vSphere 獨立用戶端或 vSphere Web 用戶端（ESXi 8.0 及更高版本的唯一選項）安裝 OVF 範本（包含在 ova 檔案中）。您不需使用 ONTAP Select Deploy 管理公用程式。
+
+
+
+
+[[step-1-prepare-the-ontap-select-cluster-host]]
+== 步驟 1：準備 ONTAP Select 叢集主機
+
+請依照下列要求準備部署 ONTAP Select 叢集的 ESXi 主機。平台描述基於標準或小型執行個體類型組態，並配備使用 VMFS-5 或 VMFS-6 檔案系統格式化的本機直連儲存設備（DAS）。
+
+image:prepare_ESXi_host_requirements.png["準備 ESXi 主機的需求"]
+
+如需主機組態選項的其他資訊、請參閱 link:esxi-host-configuration-and-preparation-checklist.html["ONTAP Select 安裝文件"] 。
+
+
+
+[[step-2-deploy-a-single-node-ontap-select-cluster-using-an-ovf-template]]
+== 步驟 2：使用 OVF 範本部署單節點 ONTAP Select 叢集
+
+在支援的 64 位元 ESXi 主機伺服器上完成下列步驟。
+
+.步驟
+. 前往 NetApp 評估產品計畫頁面，然後選取 *ONTAP Select* 以將 ONTAP Select OVF 範本下載到您的本機工作站。
+. 使用具有系統管理員權限的帳戶登入 VMware vSphere Web 用戶端。
+. 使用下列其中一個選項選取主機：
++
+** 選擇 *File* > *Deploy OVF Template*。
+** 選擇 *Datacenter* 。然後按一下滑鼠右鍵並選取 *Deploy OVF Template* 。
+
+
+. 在本機工作站上選擇 ONTAP Select 來源 OVA 檔案，然後選擇 *Next* 。
+. 檢閱 OVF 範本詳細資料，然後選取 *Next* 。
+. 檢閱 EULA 詳細資料並選取 *Accept* 。然後選取 *Next*。
+. 輸入新虛擬機器的名稱，然後選取 *Next* 。
+. 如果有多個資料存放區可用、請選取資料存放區、然後選取 *Next* 。
+. 選擇 *Thick Provision Lazy Zeroed*，然後選擇 *Next*。
+. 選擇資料和管理網路，然後選取 *Next* 。
+. 在 *Properties* 頁面上、提供所有必要的值、然後選取 *Next* 。
+. 檢閱部署詳細資料並選取 *Power on after deployment*。
+. 選取 *Finish* 以開始部署程序。
+. ONTAP Select 叢集部署完成後、您可以使用 System Manager 或 CLI 介面設定叢集。您必須使用標準的 ONTAP *disk assign* 作業來指派磁碟。
+
+
+.相關資訊
+* link:concept_lic_evaluation.html["了解 ONTAP Select 部署的評估授權"]
+* link:http://mysupport.netapp.com/matrix["互通性對照表工具"^]
+

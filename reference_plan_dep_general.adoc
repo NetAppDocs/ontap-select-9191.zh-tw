@@ -1,0 +1,138 @@
+---
+sidebar: sidebar 
+permalink: reference_plan_dep_general.html 
+keywords: plan, planning, ontap select deploy, general requirements 
+summary: 在規劃安裝 ONTAP Select Deploy 管理實用程式時，應考慮以下幾個一般性要求。 
+---
+= ONTAP Select Deploy 一般要求和規劃
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+在規劃安裝 ONTAP Select Deploy 管理實用程式時，應考慮以下幾個一般性要求。
+
+
+
+[[pairing-the-deploy-utility-with-the-ontap-select-clusters]]
+== 將 Deploy 實用程式與 ONTAP Select 叢集配對
+
+將 Deploy 公用程式執行個體與 ONTAP Select 叢集配對時,您有多種選擇。
+
+
+NOTE: 在所有部署案例中，單一 ONTAP Select 叢集及叢集中的節點只能由 Deploy 管理公用程式的一個執行個體管理。叢集無法由 Deploy 公用程式的兩個或多個不同執行個體管理。
+
+.每個 ONTAP Select 叢集都需要一個公用程式執行個體
+您可以使用專用的 Deploy 公用程式執行個體來部署和管理每個 ONTAP Select 叢集。透過這種一對一組態、每個公用程式與叢集之間的配對關係都有明確的區隔。此組態可提供高度隔離、並縮小故障網域。
+
+.一個用於多個 ONTAP Select 叢集的公用程式執行個體
+您可以使用單一 Deploy 公用程式執行個體在組織中部署和管理多個 ONTAP Select 叢集。透過這種一對多組態，所有處理和組態資料都由同一個 Deploy 公用程式執行個體進行管理。
+
+
+NOTE: Deploy 實用程式的一個執行個體最多可以管理 400 個 ONTAP Select 節點或 100 個叢集。
+
+
+
+[[requirements-related-to-the-kvm-environment]]
+== 與 KVM 環境相關的要求
+
+在 KVM Hypervisor 環境中安裝 Deploy 管理公用程式之前，您應該先檢閱基本需求並準備部署作業。
+
+.部署的需求與限制
+在 KVM 環境中安裝 ONTAP Select Deploy 公用程式時，您應考慮幾項要求和限制。
+
+.Linux KVM 主機伺服器硬體需求
+您的 Linux KVM Hypervisor 主機必須符合若干最低資源需求。請確認部署 ONTAP Select 的主機符合以下基本要求：
+
+* Linux 伺服器：
++
+** 硬體和軟體必須是 64 位元
+** 伺服器必須遵循與 ONTAP Select 節點所定義的相同支援版本
+
+
+* 虛擬 CPU （2）
+* 虛擬記憶體 (4 GB)
+* 儲存空間 (40GB)
+* 動態主機設定協定（DHCP）已啟用（您也可以指派靜態 IP 位址）
+
+
+.網路連線能力
+確認 Deploy 虛擬機器網路介面已設定、並可連線至其管理的 ONTAP Select 主機。
+
+.支援 IP 版本 4
+ONTAP Select Deploy 僅支援 IP 版本 4（IPv4）。不支援 IP 版本 6（IPv6）。此限制對 ONTAP Select 的影響如下：
+
+* 您必須將 IPv4 位址指派給 Deploy VM 的管理 LIF。
+* Deploy 無法建立配置為在 ONTAP LIF 上使用 IPv6 的 ONTAP Select 節點。
+
+
+
+
+[[required-configuration-information]]
+== 所需組態資訊
+
+作為部署計劃的一部分，您應該在安裝 ONTAP Select Deploy 管理實用程式之前確定所需的組態資訊。
+
+.Deploy VM 的名稱
+用於 VM 的名稱。
+
+.Linux KVM 主機的名稱
+安裝 Deploy 公用程式的 Linux KVM 主機。
+
+.儲存資源池的名稱
+用於存放 VM 檔案的儲存資源池（大約需要 40GB）。
+
+.VM 的網路
+Deploy VM 所連接的網路。
+
+
+
+[[optional-network-configuration-information]]
+== 選用的網路組態資訊
+
+Deploy VM 預設使用 DHCP 進行設定。不過，如有需要，您可以手動設定虛擬機器的網路介面。
+
+.主機名稱
+主機的名稱。
+
+.主機 IP 位址
+靜態 IPv4 位址。
+
+.子網路遮罩
+子網路遮罩，它是基於 VM 所屬的網路。
+
+.閘道
+預設閘道或路由器。
+
+.主要 DNS 伺服器
+主要網域名稱伺服器。
+
+.次要 DNS 伺服器
+次要網域名稱伺服器。
+
+.搜尋網域
+要使用的搜尋網域。
+
+
+
+[[authentication-using-the-credential-store]]
+== 使用認證存放區進行驗證
+
+ONTAP Select Deploy 憑證儲存庫是一個保存帳戶資訊的資料庫。Deploy 使用帳戶認證資料來執行主機驗證，作為叢集建立和管理的一部分。在規劃 ONTAP Select 部署時，您應該感知認證資料儲存區的使用方式。
+
+
+NOTE: 帳戶資訊使用 AES 加密演算法和 SHA-256 雜湊演算法安全地儲存在資料庫中。
+
+.憑證類型
+支援下列類型的認證資料：
+
+* *主機*：用於在將 ONTAP Select 節點直接部署到 VMware ESXi 的過程中對 Hypervisor 主機進行驗證。
+* *vCenter*：當主機由 VMware vCenter 管理時，在將 ONTAP Select 節點部署到 ESXi 的過程中，用於驗證 vCenter 伺服器。
+
+
+.存取
+在執行 Deploy 的常規管理任務（例如新增 hypervisor 主機）時，內部會存取憑證儲存。您也可以直接透過 Deploy Web 使用者介面和 CLI 管理憑證儲存。

@@ -1,0 +1,42 @@
+---
+sidebar: sidebar 
+permalink: concept_lic_cp_serial_number.html 
+keywords: license, licensing, Capacity Pools, node serial numbers 
+summary: 採用 Capacity Tiers 授權模式時，九位數的節點序號與指派給該節點的授權序號相同。但是，採用 Capacity Pools 授權模式時，指派給節點的序號格式有所不同。 
+---
+= ONTAP Select 容量池授權模式的節點序號
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+採用 Capacity Tiers 授權模式時，九位數的節點序號與指派給該節點的授權序號相同。但是，採用 Capacity Pools 授權模式時，指派給節點的序號格式有所不同。
+
+使用 Capacity Pools 授權的節點序號格式如下：
+
+`999 ppppppppp nnnnnnnn`
+
+
+NOTE: 為了清晰起見，已新增空格，但這些空格並非實際序號的一部分。
+
+下表從左到右描述了節點序號的各個部分。
+
+[cols="15,85"]
+|===
+| 章節 | 說明 
+
+
+| '999' | 由 NetApp 保留的常數三位數值。 
+
+
+| ppppppppp | NetApp 指派給容量資源池的可變九位數授權序號 
+
+
+| nnnnnnnn | 由 License Manager 為每個使用 Capacity Pool 的節點產生的可變八位數字值 
+|===
+
+CAUTION: 當向 NetApp 支援提交涉及使用容量池授權的節點案例時，您必須提供九位數的容量池授權序號。您不能提供完整的二十位數節點序號。您可以從節點序號中衍生授權序號，方法是跳過節點序號的前三位數字（'999'），然後提取接下來的九位數字（ppppppppp）。

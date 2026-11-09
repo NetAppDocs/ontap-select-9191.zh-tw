@@ -1,0 +1,73 @@
+---
+sidebar: sidebar 
+permalink: concept_ha_config.html 
+keywords: ontap select, high availability configurations, two-node ha, multi-node ha, mc sds 
+summary: 探索高可用性選項，為您的環境選擇最佳的 HA 組態。 
+---
+= ONTAP Select 高可用性組態
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+探索高可用性選項，為您的環境選擇最佳的 HA 組態。
+
+儘管客戶開始將應用程式工作負載從企業級儲存設備遷移到在通用硬體上執行的軟體型解決方案，但對於恢復能力和容錯能力的期望和需求並未改變。提供零復原點目標（RPO）的 HA 解決方案可保護客戶免受基礎架構堆疊中任何元件故障所導致的資料遺失。
+
+軟體定義儲存（SDS）市場很大一部分基於「無共享」儲存概念，透過軟體複寫在不同儲存孤島中儲存使用者資料的多個副本來提供資料恢復能力。ONTAP Select 在此基礎上，利用 ONTAP 提供的同步複寫功能（RAID SyncMirror）在叢集內儲存額外的使用者資料副本。這發生在 HA 配對的環境中。每個 HA 配對儲存兩個使用者資料副本：一個儲存在本地節點提供的儲存上，另一個儲存在 HA 合作夥伴提供的儲存上。在 ONTAP Select 叢集中，HA 和同步複寫緊密結合，二者的功能無法分離或獨立使用。因此，同步複寫功能僅在多節點版本中可用。
+
+
+NOTE: 在 ONTAP Select 叢集中，同步複寫功能是 HA 實作的一部分，而不是非同步 SnapMirror 或 SnapVault 複寫引擎的替代品。同步複寫不能脫離 HA 單獨使用。
+
+ONTAP Select HA 部署模型有兩種：多節點叢集（四節點、六節點、八節點、十節點或十二節點）和雙節點叢集。雙節點 ONTAP Select 叢集的主要特點是使用外部中介服務來解決腦裂問題。ONTAP Deploy VM 作為其配置的所有雙節點 HA 配對的預設中介。
+
+這兩種架構如下圖所示。
+
+*採用遠端中介器與本地附加儲存的雙節點 ONTAP Select 叢集*
+
+image:DDHA_01.jpg["使用遠端中介器和本機附加儲存設備的雙節點 ONTAP Select 叢集"]
+
+
+NOTE: 雙節點 ONTAP Select 叢集由一個 HA 配對和一個中介節點組成。在 HA 配對內，每個叢集節點上的資料集合體是同步鏡射的，因此，在發生容錯移轉時，不會遺失資料。
+
+*使用本機附加儲存設備的四節點 ONTAP Select 叢集* image:DDHA_02.jpg["使用本機附加儲存設備的四節點 ONTAP Select 叢集"]
+
+* 四節點 ONTAP Select 叢集由兩個 HA 配對組成。六節點、八節點、十節點和十二節點叢集分別由三個、四個、五個和六個 HA 配對組成。在每個 HA 配對內，每個叢集節點上的資料集合體都會進行同步鏡射，因此在發生容錯移轉時，不會遺失任何資料。
+* 使用 DAS 儲存時，一台實體伺服器上只能存在一個 ONTAP Select 執行個體。ONTAP Select 需要對系統本機 RAID 控制器擁有非共用存取權，並且旨在管理本機連接的磁碟，如果沒有與儲存裝置的實體連接，則無法實現此功能。
+
+
+
+
+[[two-node-ha-versus-multi-node-ha]]
+== 雙節點 HA 與多節點 HA
+
+與 FAS 陣列不同，HA 配對中的 ONTAP Select 節點僅透過 IP 網路進行通訊。這意味著 IP 網路是單點故障（SPOF），因此防止網路分割和裂腦情況成為設計的重要層面。多節點叢集可以承受單節點故障，因為叢集仲裁可由三個或更多倖存節點建立。雙節點叢集依賴 ONTAP Deploy VM 託管的中介服務來達成相同的結果。
+
+ONTAP Select 節點與 ONTAP Deploy 中介服務之間的心跳網路流量極少且具有彈性,因此 ONTAP Deploy VM 可以託管在與 ONTAP Select 雙節點叢集不同的資料中心中。
+
+
+NOTE: 當 ONTAP Deploy 虛擬機器作為雙節點叢集的中介節點時，它就成為該叢集不可或缺的一部分。如果中介節點服務無法使用，雙節點叢集仍會繼續提供資料服務，但 ONTAP Select 叢集的儲存故障轉移功能將會停用。因此，ONTAP Deploy 中介節點服務必須與 HA 配對中的每個 ONTAP Select 節點保持持續通訊。為了確保叢集仲裁正常運作，需要至少 5Mbps 的頻寬和 125ms 的最大往返時間（RTT）延遲。
+
+如果作為中介節點的 ONTAP Deploy VM 暫時或可能永久無法使用，則可以使用次要 ONTAP Deploy VM 來還原雙節點叢集仲裁。這會導致新的 ONTAP Deploy VM 無法管理 ONTAP Select 節點的組態，但它可以成功參與叢集仲裁演算法。ONTAP Select 節點和 ONTAP Deploy VM 之間的通訊是透過 IPv4 上的 iSCSI 協定進行。ONTAP Select 節點管理 IP 位址是啟動器、ONTAP Deploy VM IP 位址是目標。因此，在建立雙節點叢集時，無法支援節點管理 IP 位址的 IPv6 位址。ONTAP Deploy 託管的信箱磁碟會在建立雙節點叢集時自動建立並遮罩至適當的 ONTAP Select 節點管理 IP 位址。整個組態會在設定期間自動執行，不需要進一步的管理動作。建立叢集的 ONTAP Deploy 執行個體是該叢集的預設中介節點。
+
+如果需要變更原始中介器位置，則需要執行管理操作。即使原始 ONTAP Deploy 虛擬機器遺失，也可以復原叢集仲裁。但是，NetApp 建議您在每次實例化雙節點叢集後備份 ONTAP Deploy 資料庫。
+
+
+
+[[two-node-ha-versus-two-node-stretched-ha-metrocluster-sds]]
+== 雙節點 HA 與雙節點延伸 HA（MetroCluster SDS）
+
+可以將雙節點主動 / 主動 HA 叢集擴展到更大的距離，甚至可以將每個節點放置在不同的資料中心。雙節點叢集和雙節點擴展叢集（也稱為 MetroCluster SDS）之間的唯一區別在於節點之間的網路連線距離。
+
+雙節點叢集是指兩個節點位於同一資料中心內，且距離不超過 300 公尺的叢集。通常情況下，兩個節點都透過上行鏈路連接到同一網路交換器或一組交換器間連結（ISL）網路交換器。
+
+雙節點 MetroCluster SDS 是指節點之間物理距離超過 300 公尺（位於不同的房間、不同的建築物或不同的資料中心）的叢集。此外，每個節點的上行鏈路都連接到獨立的網路交換器。MetroCluster SDS 不需要專用硬體。但是，環境必須滿足延遲要求（往返時間最大為 5 毫秒，抖動最大為 5 毫秒，總計 10 毫秒）。
+
+MetroCluster SDS 是一項進階功能，需要 Premium 授權或 Premium XL 授權。Premium 授權支援建立小型和中型 VM，以及 HDD 和 SSD 媒體。Premium XL 授權還支援建立 NVMe 磁碟機。
+
+
+NOTE: MetroCluster SDS 同時支援本地附加儲存 (DAS) 和共用儲存 (vNAS)。請注意，由於 ONTAP Select 虛擬機與共用儲存之間存在網路，vNAS 配置通常具有較高的固有延遲。MetroCluster SDS 配置必須確保節點之間的延遲（包括共用儲存延遲）不超過 10 毫秒。換句話說，僅測量 Select 虛擬機器之間的延遲是不夠的，因為對於這些配置而言，共用儲存延遲不可忽略。

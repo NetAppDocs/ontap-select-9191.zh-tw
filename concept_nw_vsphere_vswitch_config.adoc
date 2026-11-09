@@ -1,0 +1,159 @@
+---
+sidebar: sidebar 
+permalink: concept_nw_vsphere_vswitch_config.html 
+keywords: ontap select, standard and distributed vSwitch configurations, vSwitch configuration and load-balancing policies 
+summary: ONTAP Select vSwitch 雙網卡和四網卡組態的組態和負載平衡原則。 
+---
+= ESXi 上的 ONTAP Select VMware vSphere vSwitch 組態
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+ONTAP Select vSwitch 雙網卡和四網卡組態的組態和負載平衡原則。
+
+ONTAP Select 支援標準配置和分散式 vSwitch 配置。分散式 vSwitches 支援鏈路聚合結構（LACP）。鏈路聚合是一種常見的網路結構，用於聚合多個實體介面卡的頻寬。LACP 是一個廠商中立的標準。它為網路端點提供了一個開放協定，可將多個實體網路連接埠群組捆綁到單一邏輯通道中。ONTAP Select 可以與配置為鏈路聚合群組（LAG）的連接埠群組配合使用。但是，NetApp 建議將個別實體連接埠用作簡單的上行鏈路（主幹）連接埠，以避免使用 LAG 配置。在這種情況下，標準和分散式 vSwitches 的最佳實務做法是相同的。
+
+本節介紹在雙網卡和四網卡配置中應使用的 vSwitch 設定和負載平衡策略。
+
+當您為 ONTAP Select 設定連接埠群組時，請遵循下列最佳實務做法；連接埠群組層級的負載平衡原則為 Route Based on Originating Virtual Port ID。VMware 建議將連接到 ESXi 主機的交換器連接埠上的 STP 設定為 Portfast 模式。
+
+所有 vSwitch 配置至少需要兩個實體網路介面卡，並將它們捆綁到一個網卡組（NIC Team）中。ONTAP Select 支援雙節點叢集使用單一 10Gb 連結。但是，NetApp 建議使用網卡聚合以確保硬體冗餘。
+
+在 vSphere 伺服器上，NIC 團隊是用於將多個實體網路介面卡整合至單一邏輯通道的彙總架構，可讓網路負載在所有成員連接埠之間共享。請務必記住，建立 NIC 團隊時不需要實體交換器的支援。負載平衡和容錯移轉原則可直接套用至 NIC 團隊，而 NIC 團隊不會察覺上游交換器組態。在此情況下，原則僅套用至傳出流量。
+
+
+NOTE: ONTAP Select 不支援靜態連接埠通道。分散式 vSwitches 支援啟用 LACP 的通道，但使用 LACP LAG 可能會導致 LAG 成員之間的負載分佈不均。
+
+對於單節點叢集，ONTAP Deploy 會將 ONTAP Select VM 設定為使用連接埠群組來連接外部網路，並使用相同的連接埠群組或（可選）不同的連接埠群組來處理叢集和節點管理流量。對於單節點叢集，您可以將所需數量的實體連接埠作為主動介面卡新增至外部連接埠群組。
+
+對於多節點叢集、ONTAP Deploy 會將每個 ONTAP Select VM 設定為內部網路使用一或兩個連接埠群組、外部網路則另外使用一或兩個連接埠群組。叢集和節點管理流量可以使用與外部流量相同的連接埠群組、或選擇性地使用個別的連接埠群組。叢集和節點管理流量無法與內部流量共用相同的連接埠群組。
+
+
+NOTE: ONTAP Select 最多支援四個 VMNIC。
+
+
+
+[[standard-or-distributed-vswitch-and-four-physical-ports-per-node]]
+== 標準或分散式 vSwitch 架構，每個節點四個實體連接埠
+
+您可以在多節點叢集中為每個節點指派四個連接埠群組。每個連接埠群組都有一個作用中實體連接埠和三個待命實體連接埠，如下圖所示。
+
+*每個節點配備四個實體連接埠的 vSwitch*
+
+image:DDN_08.jpg["每個節點有四個實體連接埠的 vSwitch"]
+
+待命清單中連接埠的順序非常重要。下表提供四個連接埠群組中實體連接埠分佈的範例。
+
+*網路最低和建議組態*
+
+[cols="5*"]
+|===
+| 連接埠群組 | 外部 1 | 外部 2 | 內部 1 | 內部 2 
+
+
+| 作用中 | vmnic0 | vmnic1 | vmnic2 | vmnic3 
+
+
+| 待機 1 | vmnic1 | vmnic0 | vmnic3 | vmnic2 
+
+
+| 待機 2 | vmnic2 | vmnic3 | vmnic0 | vmnic1 
+
+
+| 待機 3 | vmnic3 | vmnic2 | vmnic1 | vmnic0 
+|===
+下圖展示了從 vCenter UI（ONTAP-External 和 ONTAP-External2）中外部網路連接埠群組的組態。請注意，活動配接器來自不同的網路卡。在此設定中、vmnic 4 和 vmnic 5 是同一實體 NIC 上的雙連接埠、而 vmnic 6 和 vminc 7 同樣是另一個 NIC 上的雙連接埠（此範例中未使用 vnmics 0 到 3）。待命介面卡的順序提供階層式容錯移轉、內部網路的連接埠位於最後。兩個外部連接埠群組的待命清單中內部連接埠的順序同樣會互換。
+
+*第一部分： ONTAP Select 外部連接埠群組組態*
+
+image:DDN_09.jpg["第一部分：ONTAP Select 外部連接埠群組組態"]
+
+*第二部分：ONTAP Select 外部連接埠群組組態*
+
+image:DDN_10.jpg["第 2 部分：ONTAP Select 外部連接埠群組組態"]
+
+為了方便閱讀，指派如下：
+
+[cols="2*"]
+|===
+| ONTAP-External | ONTAP-External2 
+
+
+| 作用中介面卡：vmnic5 待命介面卡：vmnic7、vmnic4、vmnic6 | 作用中介面卡：vmnic7 待命介面卡：vmnic5、vmnic6、vmnic4 
+|===
+下圖展示了內部網路連接埠群組（ONTAP-Internal 和 ONTAP-Internal2）的配置。請注意，活動配接器來自不同的網路卡。在此設定中，vmnic 4 和 vmnic 5 是同一實體 ASIC 上的雙連接埠，而 vmnic 6 和 vmnic 7 則是位於不同 ASIC 上的雙連接埠。備用配接器的順序提供了階層式容錯移轉，外部網路的連接埠位於最後。兩個內部連接埠群組的備用清單中，外部連接埠的順序也同樣互換。
+
+*第一部分：ONTAP Select 內部連接埠群組組態*
+
+image:DDN_11.jpg["第 1 部分：ONTAP Select 內部連接埠群組組態"]
+
+*第二部分：ONTAP Select 內部連接埠群組*
+
+image:DDN_12.jpg["第二部分：ONTAP Select 內部連接埠群組"]
+
+為了方便閱讀，指派如下：
+
+[cols="2*"]
+|===
+| ONTAP-Internal | ONTAP-Internal2 
+
+
+| 作用中介面卡：vmnic4 待命介面卡：vmnic6、vmnic5、vmnic7 | 作用中介面卡：vmnic6 待命介面卡：vmnic4、vmnic7、vmnic5 
+|===
+
+
+[[standard-or-distributed-vswitch-and-two-physical-ports-per-node]]
+== 標準或分散式 vSwitch 和每個節點兩個實體連接埠
+
+當使用兩塊高速（25/40Gb）網路卡時，建議的連接埠組配置在概念上與使用四塊 10Gb 網路卡的配置非常相似。即使只使用兩塊實體網路卡，也應該使用四個連接埠組。連接埠組分配如下：
+
+[cols="5*"]
+|===
+| 連接埠群組 | 外部 1（e0a、e0b） | 內部 1 (e0c、e0e) | 內部 2 (e0d、e0f) | 外部 2 (e0g) 
+
+
+| 作用中 | vmnic0 | vmnic0 | vmnic1 | vmnic1 
+
+
+| 待命 | vmnic1 | vmnic1 | vmnic0 | vmnic0 
+|===
+*vSwitch 每個節點配備兩個高速（25/40Gb）實體連接埠*
+
+image:DDN_17.jpg["vSwitch 每個節點配備兩個高速（25/40Gb）實體連接埠"]
+
+當使用兩個實體連接埠（10Gb 或更低）時，每個連接埠組應配置一個活動適配器和一個備用適配器，二者配置方向相反。內部網路僅適用於多節點 ONTAP Select 叢集。對於單節點叢集，外部連接埠組中的兩個適配器均可配置為活動狀態。
+
+以下範例展示了 vSwitch 的組態，以及負責處理多節點 ONTAP Select 叢集內部和外部通訊服務的兩個連接埠群組。由於內部網路 VMNIC 屬於此連接埠群組並設定為待命模式，因此在網路中斷時，外部網路可以使用內部網路 VMNIC。外部網路的情況則相反。在兩個連接埠群組之間交替使用主動和待命 VMNIC，對於在網路中斷期間正確容錯移轉 ONTAP Select VM 至關重要。
+
+*每個節點配備兩個實體連接埠（10Gb 或更低）的 vSwitch*
+
+image:DDN_13.jpg["每個節點有兩個實體連接埠的 vSwitch"]
+
+
+
+[[distributed-vswitch-with-lacp]]
+== 使用 LACP 的分散式 vSwitch
+
+在組態中使用分散式 vSwitches 時，可以使用 LACP（儘管並非最佳實務做法）來簡化網路組態。唯一支援的 LACP 組態要求所有 VMNIC 都位於單一 LAG 中。上行實體交換器必須支援通道中所有連接埠的 MTU 大小在 7,500 到 9,000 之間。內部和外部 ONTAP Select 網路應在連接埠群組層級是隔離的。內部網路應使用不可路由（隔離的）VLAN。外部網路可以使用 VST、EST 或 VGT。
+
+以下範例展示了使用 LACP 的分散式 vSwitch 設定。
+
+*使用 LACP 時的 LAG 屬性*
+
+image:DDN_14.jpg["使用 LACP 時的 LAG 屬性"]
+
+*使用啟用 LACP 的分散式 vSwitch 進行外部連接埠群組組態*
+
+image:DDN_15.jpg["使用啟用 LACP 的分散式 vSwitch 的外部連接埠群組組態"]
+
+*使用啟用 LACP 的分散式 vSwitch 進行內部連接埠群組組態*
+
+image:DDN_16.jpg["使用啟用 LACP 的分散式 vSwitch 的內部連接埠群組組態"]
+
+
+NOTE: LACP 要求您將上游交換器連接埠設定為連接埠通道。在分散式 vSwitch 中啟用此設定之前，請確保已正確設定啟用 LACP 的連接埠通道。

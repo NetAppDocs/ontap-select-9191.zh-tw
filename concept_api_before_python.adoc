@@ -1,0 +1,30 @@
+---
+sidebar: sidebar 
+permalink: concept_api_before_python.html 
+keywords: rest api, deploy rest api, rest, python, before you begin 
+summary: 在執行範例 Python 指令碼之前、您必須先準備好環境。 
+---
+= 了解如何使用 Python 存取 ONTAP Select Deploy API
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+在執行範例 Python 指令碼之前、您必須先準備好環境。
+
+在執行 Python 指令碼之前，必須確保環境配置正確：
+
+* 必須安裝最新適用的 Python2 版本。範例程式碼已使用 Python2 進行測試。它們也應該可以移植到 Python3，但尚未進行相容性測試。
+* 必須安裝 Requests 和 urllib3 函式庫。您可以根據您的環境使用 pip 或其他 Python 管理工具。
+* 執行指令碼的用戶端工作站必須能夠透過網路存取 ONTAP Select Deploy 虛擬機器。
+
+
+此外、您必須擁有下列資訊：
+
+* Deploy 虛擬機器的 IP 位址
+* Deploy 管理員帳戶的使用者名稱和密碼
+

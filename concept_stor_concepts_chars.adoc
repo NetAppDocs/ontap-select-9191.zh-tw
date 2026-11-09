@@ -1,0 +1,191 @@
+---
+sidebar: sidebar 
+permalink: concept_stor_concepts_chars.html 
+keywords: ontap select, storage concepts 
+summary: 在深入了解特定的儲存組件之前，請先了解適用於 ONTAP Select 環境的一般儲存概念。 
+---
+= 了解 ONTAP Select 的一般儲存設備特性
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+在深入了解特定的儲存組件之前，請先了解適用於 ONTAP Select 環境的一般儲存概念。
+
+
+
+[[phases-of-storage-configuration]]
+== 儲存組態階段
+
+ONTAP Select 主機儲存的主要組態階段包括以下幾個方面：
+
+* 部署前準備工作
++
+** 確保每個 Hypervisor 主機都已設定完成，並準備好進行 ONTAP Select 部署。
+** 組態涉及實體磁碟機、RAID 控制器和群組、LUN 以及相關的網路準備。
+** 此配置是在 ONTAP Select 之外執行的。
+
+
+* 使用 hypervisor 管理程式公用程式進行組態設定
++
+** 您可以使用 Hypervisor 管理公用程式（例如 VMware 環境中的 vSphere）來設定儲存資料的某些方面。
+** 此配置是在 ONTAP Select 之外執行的。
+
+
+* 使用 ONTAP Select Deploy 管理公用程式進行組態設定
++
+** 您可以使用 Deploy 管理公用程式來設定核心邏輯儲存架構。
+** 這可以透過 CLI 命令明確執行，也可以由該實用程式在部署過程中自動執行。
+
+
+* 部署後組態
++
+** ONTAP Select 部署完成後，您可以使用 ONTAP CLI 或 System Manager 設定叢集。
+** 此組態是在 ONTAP Select Deploy 之外執行的。
+
+
+
+
+
+
+[[managed-versus-unmanaged-storage]]
+== 託管儲存與非託管儲存
+
+由 ONTAP Select 直接存取和控制的儲存設備是託管儲存設備。同一 Hypervisor 主機上的任何其他儲存設備都是非託管儲存設備。
+
+
+
+[[homogeneous-physical-storage]]
+=== 同質實體儲存設備
+
+組成 ONTAP Select 管理儲存的所有實體磁碟機必須是同構的。也就是說、所有硬體在以下特性方面必須相同：
+
+* 類型（SAS、NL-SAS、SATA、SSD）
+* 轉速 (RPM)
+
+
+
+
+[[illustration-of-the-local-storage-environment]]
+== 本機儲存環境示意圖
+
+每個 Hypervisor 主機都包含可供 ONTAP Select 使用的本機磁碟和其他邏輯儲存元件。這些儲存元件以分層結構排列，從實體磁碟開始。
+
+image:ST_01.jpg["本機儲存環境"]
+
+
+
+[[characteristics-of-the-local-storage-components]]
+=== 本機儲存元件的特性
+
+ONTAP Select 環境中使用的本機儲存元件涉及多個概念。在準備部署 ONTAP Select 之前、您應該熟悉這些概念。這些概念按類別排列:RAID 群組和 LUN、儲存資源池以及虛擬磁碟。
+
+
+
+==== 將實體磁碟機分組到 RAID 群組和 LUN 中
+
+一個或多個實體磁碟可以本地連接到主機伺服器，並供 ONTAP Select 使用。這些實體磁碟被指派到 RAID 群組，然後以一個或多個 LUN 的形式呈現給虛擬機器管理程式主機作業系統。每個 LUN 都以實體硬碟呈現給虛擬機器管理程式主機作業系統。
+
+配置 ONTAP Select 主機時，您應該注意以下事項：
+
+* 所有託管儲存設備都必須可透過單一 RAID 控制器存取
+* 根據供應商的不同，每個 RAID 控制器支援每個 RAID 群組的最大磁碟機數量也不同
+
+
+
+
+==== 一個或多個 RAID 群組
+
+每個 ONTAP Select 主機必須只有一個 RAID 控制器。您應該為 ONTAP Select 建立一個 RAID 群組。但是，在某些情況下，您可以考慮建立多個 RAID 群組。請參閱 link:reference_plan_best_practices.html["最佳實務做法摘要"]。
+
+
+
+[[storage-pool-considerations]]
+=== 儲存資源池考量事項
+
+在準備部署 ONTAP Select 時，您應該了解與儲存資源池相關的幾個問題。
+
+
+NOTE: 在 VMware 環境中，儲存資源池與 VMware 資料存放區是同義詞。
+
+
+
+==== 儲存資源池和 LUN
+
+每個 LUN 在虛擬機器管理程式主機上都被視為本機磁碟，並且可以是一個儲存池的一部分。每個儲存池都使用虛擬機器管理程式主機作業系統可以使用的檔案系統進行格式化。
+
+您必須確保在 ONTAP Select 部署過程中正確建立儲存資源池。您可以使用 Hypervisor 管理工具建立儲存資源池。例如，在 VMware 中,您可以使用 vSphere 用戶端建立儲存資源池。然後,該儲存資源池將傳遞給 ONTAP Select Deploy 管理公用程式。
+
+
+
+[[manage-the-virtual-disks-on-esxi]]
+=== 管理 ESXi 上的虛擬磁碟
+
+在準備部署 ONTAP Select 時，您應該了解與虛擬磁碟相關的幾個問題。
+
+
+
+==== 虛擬磁碟和檔案系統
+
+ONTAP Select 虛擬機器被指派了多個虛擬磁碟機。每個虛擬磁碟實際上都是儲存池中的一個檔案，由虛擬機器管理程式維護。ONTAP Select 使用幾種類型的磁碟，主要包括系統磁碟和資料磁碟。
+
+您還應該注意以下有關虛擬磁碟的事項：
+
+* 必須先有可用的儲存資源池，才能建立虛擬磁碟。
+* 在建立虛擬機器之前，無法建立虛擬磁碟。
+* 您必須依賴 ONTAP Select Deploy 管理公用程式來建立所有虛擬磁碟（也就是說，管理員絕不能透過 Deploy 公用程式以外的方式建立虛擬磁碟）。
+
+
+
+
+==== 設定虛擬磁碟
+
+虛擬磁碟由 ONTAP Select 管理。當您使用 Deploy 管理公用程式建立叢集時，它們會自動建立。
+
+
+
+[[illustration-of-the-external-storage-environment-on-esxi]]
+== ESXi 上的外部儲存環境示意圖
+
+ONTAP Select vNAS 解決方案可讓 ONTAP Select 能夠使用位於 Hypervisor 主機外部儲存設備上的資料存放區。這些資料存放區可以透過網路使用 VMware vSAN 存取，也可以直接在外部儲存陣列存取。
+
+ONTAP Select 可以設定為使用下列類型的 VMware ESXi 網路資料存放區，這些資料存放區位於 Hypervisor 主機外部：
+
+* vSAN（Virtual SAN）
+* VMFS
+* NFS
+
+
+
+
+[[vsan-datastores]]
+=== vSAN 資料存放區
+
+每個 ESXi 主機可以擁有一個或多個本機 VMFS 資料儲存區。通常情況下，這些資料儲存區只能由本機主機存取。但是，VMware vSAN 允許 ESXi 叢集中的每個主機共用叢集中的所有資料儲存區，就像這些資料儲存區是本機儲存區一樣。下圖展示了 vSAN 如何建立一個資料儲存區集區，供 ESXi 叢集中的主機共用。
+
+image:ST_02.jpg["ESXi 叢集"]
+
+
+
+[[vmfs-datastore-on-external-storage-array]]
+=== 外部儲存陣列上的 VMFS 資料存放區
+
+您可以建立位於外部儲存陣列上的 VMFS 資料儲存區。該儲存可透過多種不同的網路協定進行存取。下圖展示了使用 iSCSI 協定存取外部儲存陣列上的 VMFS 資料儲存區。
+
+
+NOTE: ONTAP Select 支援 VMware Storage/SAN Compatibility 文件中所述的所有外部儲存陣列，包括 iSCSI、Fiber Channel 和 Fiber Channel over Ethernet。
+
+image:ST_03.jpg["ESXi Hypervisor 主機"]
+
+
+
+[[nfs-datastore-on-external-storage-array]]
+=== 外部儲存陣列上的 NFS 資料存放區
+
+您可以建立位於外部儲存陣列上的 NFS 資料儲存區。此儲存空間透過 NFS 網路傳輸協定進行存取。下圖展示了透過 NFS 伺服器應用裝置存取的位於外部儲存上的 NFS 資料儲存區。
+
+image:ST_04.jpg["ESXi Hypervisor 主機"]

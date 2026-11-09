@@ -1,0 +1,166 @@
+---
+sidebar: sidebar 
+permalink: concept_ots_overview.html 
+keywords: overview, software defined storage, sds, typical deployment, ontap 9 
+summary: ONTAP Select 是 ONTAP 的純軟體版本，您可以將其作為虛擬機器部署在虛擬機器管理程式主機上。它補充了主流的 FAS 和 AFF ONTAP 產品套件以及其他純軟體選項，例如 Cloud Volumes ONTAP。 
+---
+= 了解 ONTAP Select
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+ONTAP Select 是 ONTAP 的純軟體版本，您可以將其作為虛擬機器部署在 Hypervisor 主機上。它補充了主流的 AFF 和 FAS ONTAP 產品套件以及其他純軟體選項，例如 Cloud Volumes ONTAP。
+
+ONTAP Select 可將內部磁碟機（NVMe、SSD 或 HDD）以及外部陣列儲存轉換為靈活的儲存系統，並提供與專用 ONTAP 儲存系統相同的諸多優勢。您也可以將 ONTAP Select 部署在新伺服器或現有伺服器基礎架構上。ONTAP Select 易於管理，並採用與基於 ONTAP 的解決方案相同的管理軟體，這意味著更低的維運成本和培訓需求。
+
+ONTAP Select 提供兩種互補的授權模式—容量層級和完全靈活的容量池，以滿足您的容量使用需求。兩種授權模式均可讓您以低至 1TB 的增量增加容量。例如，您可以從幾 TB 的容量開始，並隨著專案的成長動態添加容量。如果您使用容量池，則可以在專案完成後根據需要重新分配容量。
+
+ONTAP Select 已整合到 VMware vSphere 和 Kernel-based Virtual Machine（KVM）等雲端管理框架中。這有助於加速新專案的部署，例如檔案服務、主目錄、軟體開發環境和應用程式測試。
+
+SnapMirror 軟體可讓您在混合雲的 ONTAP 儲存設備之間移動資料，以便您輕鬆存取所需位置的資料。例如、您可以快速啟動環境來證明想法。之後、您可以將專案移至專屬的儲存平台以進行正式作業部署、或是將其作為開發工作流程的一部分、使其更容易在雲端中存取。
+
+
+
+[[software-defined-storage]]
+== 軟體定義儲存設備
+
+透過軟體實施和交付 IT 服務，管理員能夠以前所未有的速度和靈活性快速配置資源。隨著現代資料中心向軟體定義基礎架構（SDI）架構遷移，您可以將最有價值的 IT 資產與底層實體基礎架構分離，從而提供靈活性、可擴充性和可程式性。
+
+在資料分散於各個直連式儲存設備 (DAS) 孤島的商品化世界中，資料存取與管理已成為日益複雜的問題。軟體定義儲存設備 (SDS) 的出現，使其成為軟體定義基礎架構 (SDI) 領域的重要組成部分，旨在解決這些問題及其他相關問題。
+
+ONTAP Select 是 NetApp 針對 SDS 市場的解決方案。ONTAP Select 將企業級儲存管理功能引入軟體定義的資料中心、並將 NetApp Data Fabric 架構擴展到極端邊緣使用案例、包括物聯網（IoT）和戰術伺服器。
+
+
+
+[[two-software-components]]
+== 兩個軟體元件
+
+ONTAP Select 由兩個主要軟體元件組成：
+
+
+
+[[ontap-select-node]]
+=== ONTAP Select 節點
+
+ONTAP Select 叢集由一個、兩個、四個、六個、八個、十個或十二個節點組成。每個叢集節點都部署為獨立的虛擬機器，並執行專門設計的 ONTAP 9 軟體版本。
+
+
+
+[[ontap-select-deploy-administration-utility]]
+=== ONTAP Select Deploy 管理公用程式
+
+Deploy 管理公用程式會封裝並安裝為獨立的 Linux 虛擬機器。您必須使用此公用程式在正式作業環境中部署 ONTAP Select 叢集。目前版本的 ONTAP Select 節點映像會與 Deploy 公用程式搭售。
+
+
+NOTE: Deploy 管理實用程式沒有單獨的版本號碼。Deploy 的版本號碼與關聯的 ONTAP Select 版本相同。但是，在特定的 ONTAP Select 版本中，Deploy 實用程式的每次更新都有一個唯一的內部版本號。
+
+
+
+[[illustration-of-a-typical-deployment]]
+== 典型部署示意圖
+
+下圖展示如何使用 NetApp ONTAP Select Deploy 管理實用程式來部署和支援一個四節點 ONTAP Select 叢集。Deploy 實用程式和 ONTAP Select 節點作為獨立的虛擬機器運行在專用的虛擬機器管理程式主機上。
+
+image:ots_architecture.png["圖示為使用 Deploy 管理實用程式建立的 ONTAP Select 四節點叢集。"]
+
+
+
+[[flexcache-write-back-with-ontap-select]]
+== FlexCache 使用 ONTAP Select 進行回寫
+
+ONTAP Select 支援具備回寫功能的 FlexCache 快取 Volume。ONTAP Select 執行個體的整體效能與入門級 ONTAP 系統相當。
+
+使用 ONTAP Select 時，具有回寫功能的 FlexCache 快取磁碟區有以下要求：
+
+* 在中型（8 核心）或大型（16 核心）實例上使用 ONTAP Select。
+* 使用 NVMe 支援的固態硬碟。對於 ONTAP Select，SAS 支援的儲存裝置相較於 NVMe 支援的儲存裝置，效能較低。
+* 在開始部署之前，請先測試 ONTAP Select 的 FlexCache 回寫功能。對於大量小檔案，不建議使用 FlexCache 回寫功能。
+
+
+ONTAP Select 不支援在小型執行個體（4 核心）上使用回寫功能的 FlexCache 快取磁碟區。此外，ONTAP Select 不支援在小型、中型或大型執行個體上使用回寫功能的 FlexCache 來源磁碟區。
+
+link:https://docs.netapp.com/us-en/ontap/flexcache-writeback/flexcache-write-back-guidelines.html["了解 ONTAP FlexCache 回寫功能"^]
+
+
+
+[[compare-ontap-select-and-ontap-9]]
+== 比較 ONTAP Select 和 ONTAP 9
+
+基於硬體的 ONTAP 和 ONTAP Select 都提供企業級儲存解決方案。然而，由於它們的設計和實作方式不同，因此各自適用於不同的業務需求和使用情境。在規劃 ONTAP Select 部署之前，您應該了解這兩個平台的主要差異。
+
+
+
+[[different-ha-architecture]]
+=== 不同的 HA 架構
+
+ONTAP Select 可根據叢集中定義的節點數量提供高可用性（HA）功能。例如，一個四節點叢集包含兩個 HA 配對。ONTAP Select 使用的 HA 架構是基於非共用儲存模型。也就是說，HA 配對中的一個節點無法直接存取另一個節點擁有的儲存設備。這種設計可能會影響 ONTAP Select 的某些運作特性。
+
+
+
+[[capacity-licensing]]
+=== 容量授權
+
+ONTAP Select 引進了基於使用量的授權模式。在生產環境中部署 ONTAP Select 叢集時，您必須為每個節點或共用容量池購買儲存容量授權。使用 Deploy 公用程式，您必須套用授權檔案，這些檔案將為叢集節點建立儲存容量。
+
+
+
+[[ontap-feature-licensing]]
+=== ONTAP 功能授權
+
+ONTAP Select 叢集中的每個節點都已自動獲得使用多個 ONTAP 功能的授權。您無需手動安裝或套用這些功能授權。
+
+
+
+[[ontap-features-not-supported-in-ontap-select]]
+=== ONTAP Select 不支援的 ONTAP 功能
+
+ONTAP Select 不支援某些 ONTAP 功能。在大多數情況下，這些功能需要特殊的硬體，而虛擬化的 ONTAP Select 環境中並未提供這些硬體。
+
+* Autonomous Ransomware Protection (ARP) 的自動更新
++
+
+NOTE: 從 ONTAP Select 9.16.1 開始，支援手動更新 ARP，並且 ARP 功能授權包含在 NetApp 授權檔案 (NLF) 中。
+
+* 雲端金鑰管理程式
+* 叢集 IPspace
++
+不支援對叢集 IPspace 進行任何修改，包括新增或移除連接埠、虛擬區域網路（VLAN）或連結聚合群組。
+
+* 非同步 SnapMirror 中的一致性群組
+* Fibre Channel
++
+不支援 Fibre Channel 和 Fibre Channel over Ethernet。
+
+* 健全狀況監視器
++
+傳統基於硬體的 ONTAP 部署所使用的健全狀況監控機制僅針對底層硬體元件。由於 ONTAP Select 採用虛擬化環境，因此健全狀況監控機制不處於作用中狀態。
+
+* 介面群組
++
+不支援介面群組。
+
+* NIC 卸載支援
++
+由於 ONTAP Select 使用的是虛擬化環境，因此不支援 NIC 卸載功能。
+
+* NetApp 儲存加密磁碟機
+* ONTAP 連接埠屬性
++
+不支援修改 ONTAP 連接埠的屬性，包括速度、雙工和流量控制。
+
+* 服務處理器
+* SVM-Migrate
+* SnapLock Compliance
+* SnapMirror 主動同步
+* VMware HCX
+
+
+.相關資訊
+* link:reference_lic_ontap_features.html#licensed-ontap-features["了解預設授權的 ONTAP 功能"]
+* link:concept_lic_evaluation.html["了解 ONTAP Select 授權選項"]
+

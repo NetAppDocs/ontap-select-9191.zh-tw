@@ -1,0 +1,420 @@
+---
+sidebar: sidebar 
+permalink: reference_api_workflow.html 
+keywords: rest api, deploy rest api, rest, workflow, create cluster, curl, json 
+summary: 您可以在由 vCenter 管理的 VMware ESXi 主機上部署單節點 ONTAP Select 叢集。 
+---
+= 在 ESXi 上建立 ONTAP Select 單節點評估叢集
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+您可以在由 vCenter 管理的 VMware ESXi 主機上部署單節點 ONTAP Select 叢集。叢集是使用評估授權建立的。
+
+在以下情況下，叢集建立工作流程有所不同：
+
+* ESXi 主機不受 vCenter（獨立式主機）代管。
+* 叢集中使用多個節點或主機。
+* 叢集已部署在正式作業環境中，並搭配已購買的授權。
+* 使用 KVM Hypervisor 取代 VMware ESXi。
+
+
+
+
+[[step-1-register-vcenter-server-credential]]
+== 步驟 1：註冊 vCenter 伺服器認證資料
+
+部署至由 vCenter 伺服器代管的 ESXi 主機時，您必須在註冊主機之前新增認證資料。然後，Deploy 管理公用程式即可使用該認證資料向 vCenter 進行驗證。
+
+[cols="15,15,70"]
+|===
+| 類別 | HTTP 動詞 | 路徑 
+
+
+| 部署 | POST | /security/credentials 
+|===
+Curl::
+
+
+[source, curl]
+----
+curl -iX POST -H 'Content-Type: application/json' -u admin:<password> -k -d @step01 'https://10.21.191.150/api/security/credentials'
+----
+JSON 輸入（步驟 01）::
+
+
+[source, json]
+----
+{
+  "hostname": "vcenter.company-demo.com",
+  "type": "vcenter",
+  "username": "misteradmin@vsphere.local",
+  "password": "mypassword"
+}
+----
+處理類型:: 非同步
+輸出::
++
+--
+* 位置回應標頭中的認證 ID
+* 工作物件
+
+
+--
+
+
+
+
+[[step-2-register-a-hypervisor-host]]
+== 步驟 2：註冊 Hypervisor 主機
+
+新增一個 Hypervisor 主機，其中包含 ONTAP Select 節點的虛擬機器將在該主機上執行。
+
+[cols="15,15,70"]
+|===
+| 類別 | HTTP 動詞 | 路徑 
+
+
+| 叢集 | POST | /hosts 
+|===
+Curl::
+
+
+[source, curl]
+----
+curl -iX POST -H 'Content-Type: application/json' -u admin:<password> -k -d @step02 'https://10.21.191.150/api/hosts'
+----
+JSON 輸入（步驟 02）::
+
+
+[source, json]
+----
+{
+  "hosts": [
+    {
+      "hypervisor_type": "ESX",
+      "management_server": "vcenter.company-demo.com",
+      "name": "esx1.company-demo.com"
+    }
+  ]
+}
+----
+處理類型:: 非同步
+輸出::
++
+--
+* 位置回應標頭中的主機 ID
+* 工作物件
+
+
+--
+
+
+
+
+[[step-3-create-a-cluster]]
+== 步驟 3：建立叢集
+
+建立 ONTAP Select 叢集時，基本叢集組態會被註冊，Deploy 會自動產生節點名稱。
+
+[cols="15,15,70"]
+|===
+| 類別 | HTTP 動詞 | 路徑 
+
+
+| 叢集 | POST | /clusters 
+|===
+Curl:: 對於單節點叢集，應將查詢參數 node_count 設定為 1。
+
+
+[source, curl]
+----
+curl -iX POST -H 'Content-Type: application/json' -u admin:<password> -k -d @step03 'https://10.21.191.150/api/clusters? node_count=1'
+----
+JSON 輸入（步驟 03）::
+
+
+[source, json]
+----
+{
+  "name": "my_cluster"
+}
+----
+處理類型:: 同步
+輸出::
++
+--
+* 位置回應標頭中的叢集 ID
+
+
+--
+
+
+
+
+[[step-4-configure-the-cluster]]
+== 步驟 4：設定叢集
+
+設定叢集時，您必須提供下列屬性。
+
+[cols="15,15,70"]
+|===
+| 類別 | HTTP 動詞 | 路徑 
+
+
+| 叢集 | PATCH | /clusters/{cluster_id} 
+|===
+Curl:: 請提供叢集 ID。
+
+
+[source, curl]
+----
+curl -iX PATCH -H 'Content-Type: application/json' -u admin:<password> -k -d @step04 'https://10.21.191.150/api/clusters/CLUSTERID'
+----
+JSON 輸入（步驟 04）::
+
+
+[source, json]
+----
+{
+  "dns_info": {
+    "domains": ["lab1.company-demo.com"],
+    "dns_ips": ["10.206.80.135", "10.206.80.136"]
+    },
+    "ontap_image_version": "9.5",
+    "gateway": "10.206.80.1",
+    "ip": "10.206.80.115",
+    "netmask": "255.255.255.192",
+    "ntp_servers": {"10.206.80.183"}
+}
+----
+處理類型:: 同步
+輸出:: 無
+
+
+
+
+[[step-5-retrieve-the-node-name]]
+== 步驟 5：擷取節點名稱
+
+Deploy 管理公用程式會在建立叢集時自動產生節點識別碼和名稱。在設定節點之前，您需要擷取已指派的 ID。
+
+[cols="15,15,70"]
+|===
+| 類別 | HTTP 動詞 | 路徑 
+
+
+| 叢集 | 取得 | /clusters/{cluster_id}/nodes 
+|===
+Curl:: 請提供叢集 ID。
+
+
+[source, curl]
+----
+curl -iX GET -u admin:<password> -k 'https://10.21.191.150/api/clusters/CLUSTERID/nodes?fields=id,name'
+----
+處理類型:: 同步
+輸出::
++
+--
+* 陣列記錄，每筆記錄描述一個具有唯一 ID 和名稱的單一節點
+
+
+--
+
+
+
+
+[[step-6-configure-the-nodes]]
+== 步驟 6：設定節點
+
+提供節點的基本組態，這是用於設定節點的三個 API 呼叫中的第一個。
+
+[cols="15,15,70"]
+|===
+| 類別 | HTTP 動詞 | 路徑 
+
+
+| 叢集 | 路徑 | /clusters/{cluster_id}/nodes/{node_id} 
+|===
+Curl:: 請提供叢集 ID 和節點 ID。
+
+
+[source, curl]
+----
+curl -iX PATCH -H 'Content-Type: application/json' -u admin:<password> -k -d @step06 'https://10.21.191.150/api/clusters/CLUSTERID/nodes/NODEID'
+----
+JSON 輸入（步驟 06）:: 請提供 ONTAP Select 節點將執行的主機 ID。
+
+
+[source, json]
+----
+{
+  "host": {
+    "id": "HOSTID"
+    },
+  "instance_type": "small",
+  "ip": "10.206.80.101",
+  "passthrough_disks": false
+}
+----
+處理類型:: 同步
+輸出:: 無
+
+
+
+
+[[step-7-retrieve-the-node-networks]]
+== 步驟 7：擷取節點網路
+
+識別單節點叢集中節點所使用的資料與管理網路。單節點叢集不使用內部網路。
+
+[cols="15,15,70"]
+|===
+| 類別 | HTTP 動詞 | 路徑 
+
+
+| 叢集 | 取得 | /clusters/{cluster_id}/nodes/{node_id}/networks 
+|===
+Curl:: 請提供叢集 ID 和節點 ID。
+
+
+[source, curl]
+----
+curl -iX GET -u admin:<password> -k 'https://10.21.191.150/api/ clusters/CLUSTERID/nodes/NODEID/networks?fields=id,purpose'
+----
+處理類型:: 同步
+輸出::
++
+--
+* 包含兩筆記錄的陣列，每筆記錄描述節點的單一網路，包括唯一 ID 和用途
+
+
+--
+
+
+
+
+[[step-8-configure-the-node-networking]]
+== 步驟 8：設定節點連網
+
+設定資料網路和管理網路。單節點叢集不使用內部網路。
+
+
+NOTE: 對每個網路分別發出以下 API 呼叫兩次。
+
+[cols="15,15,70"]
+|===
+| 類別 | HTTP 動詞 | 路徑 
+
+
+| 叢集 | PATCH | /clusters/{cluster_id}/nodes/{node_id}/networks/{network_id} 
+|===
+Curl:: 請提供叢集 ID、節點 ID 和網路 ID。
+
+
+[source, curl]
+----
+curl -iX PATCH -H 'Content-Type: application/json' -u admin:<password> -k -d @step08 'https://10.21.191.150/api/clusters/ CLUSTERID/nodes/NODEID/networks/NETWORKID'
+----
+JSON 輸入（步驟 08）:: 請提供網路名稱。
+
+
+[source, json]
+----
+{
+  "name": "sDOT_Network"
+}
+----
+處理類型:: 同步
+輸出:: 無
+
+
+
+
+[[step-9-configure-the-node-storage-pool]]
+== 步驟 9：設定節點儲存資源池
+
+配置節點的最後一步是附加儲存池。您可以透過 vSphere Web 用戶端或部署 REST API（選用）來確定可用的儲存池。
+
+[cols="15,15,70"]
+|===
+| 類別 | HTTP 動詞 | 路徑 
+
+
+| 叢集 | PATCH | /clusters/{cluster_id}/nodes/{node_id}/networks/{network_id} 
+|===
+Curl:: 請提供叢集 ID、節點 ID 和網路 ID。
+
+
+[source, curl]
+----
+curl -iX PATCH -H 'Content-Type: application/json' -u admin:<password> -k -d @step09 'https://10.21.191.150/api/clusters/ CLUSTERID/nodes/NODEID'
+----
+JSON 輸入（步驟 09）:: 儲存池容量為 2 TB。
+
+
+[source, json]
+----
+{
+  "pool_array": [
+    {
+      "name": "sDOT-01",
+      "capacity": 2147483648000
+    }
+  ]
+}
+----
+處理類型:: 同步
+輸出:: 無
+
+
+
+
+[[step-10-deploy-the-cluster]]
+== 步驟 10：部署叢集
+
+叢集和節點配置完成後，即可部署叢集。
+
+[cols="15,15,70"]
+|===
+| 類別 | HTTP 動詞 | 路徑 
+
+
+| 叢集 | POST | /clusters/{cluster_id}/deploy 
+|===
+Curl:: 請提供叢集 ID。
+
+
+[source, curl]
+----
+curl -iX POST -H 'Content-Type: application/json' -u admin:<password> -k -d @step10 'https://10.21.191.150/api/clusters/CLUSTERID/deploy'
+----
+JSON 輸入（步驟 10）:: 請提供 ONTAP 系統管理員帳戶的密碼。
+
+
+[source, json]
+----
+{
+  "ontap_credentials": {
+    "password": "mypassword"
+  }
+}
+----
+處理類型:: 非同步
+輸出::
++
+--
+* 工作物件
+
+
+--
+
+
+.相關資訊
+link:deploy-evaluation-ontap-select-ovf-template.html["部署一個為期 90 天的 ONTAP Select 叢集評估執行個體"]

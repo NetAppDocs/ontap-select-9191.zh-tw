@@ -1,0 +1,101 @@
+---
+sidebar: sidebar 
+permalink: concept_stor_vsan_external.html 
+keywords: ontap select, vsan and external array configurations, vnas architecture 
+summary: '虛擬 NAS (vNAS) 部署支援 vSAN 上的 ONTAP Select 叢集、部分 HCI 產品、NetApp HCI 技術以及外部陣列類型的資料儲存區。這些組態的基礎基礎架構可提供資料儲存區恢復能力。' 
+---
+= ONTAP Select vSAN 和外部陣列組態
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+虛擬 NAS (vNAS) 部署支援虛擬 SAN (vSAN) 上的 ONTAP Select 叢集、部分 HCI 產品以及外部陣列類型的資料儲存區。這些組態的基礎基礎架構可提供資料儲存區恢復能力。
+
+最低要求是您使用的 Hypervisor（在支援的 Linux 主機上執行的 VMware ESXi 或 KVM）支援底層組態。如果 Hypervisor 是 ESXi，則它應該列在對應的 VMware HCL 中。
+
+
+
+[[vnas-architecture]]
+== vNAS 架構
+
+vNAS 命名規則適用於所有不使用 DAS 的設定。對於多節點 ONTAP Select 叢集，這包括同一 HA 配對中的兩個 ONTAP Select 節點共享單一資料存放區（包括 vSAN 資料存放區）的架構。節點也可以安裝在來自相同共用外部陣列的不同資料存放區上。這可以提高陣列端的儲存效率，從而減少整個 ONTAP Select HA 配對的整體佔用空間。ONTAP Select vNAS 解決方案的架構與使用本機 RAID 控制器的 ONTAP Select on DAS 非常相似。也就是說，每個 ONTAP Select 節點都會繼續保留其 HA 合作夥伴的資料副本。ONTAP 儲存效率原則的範圍為節點。因此，陣列端的儲存效率更為理想，因為它們可能會套用至來自兩個 ONTAP Select 節點的資料集。
+
+HA 配對中的每個 ONTAP Select 節點也可以使用個別的外部陣列。當使用 ONTAP Select MetroCluster SDS 搭配外部儲存設備時，這是常見的選擇。
+
+當為每個 ONTAP Select 節點使用單獨的外部陣列時，兩個陣列必須為 ONTAP Select VM 提供類似的效能特徵，這一點非常重要。
+
+
+
+[[vnas-architectures-versus-local-das-with-hardware-raid-controllers]]
+=== vNAS 架構與採用硬體 RAID 控制器的本機 DAS
+
+vNAS 架構在邏輯上與配備 DAS 和 RAID 控制器的伺服器架構最為相似。在這兩種情況下、ONTAP Select 都會佔用資料儲存區空間。該資料儲存區空間會被分割成 VMDK、而這些 VMDK 會形成傳統的 ONTAP 資料 Aggregate。ONTAP Deploy 可確保在叢集建立和儲存新增作業期間、VMDK 的大小適當、並指派給正確的 Plex（在 HA 配對的情況下）。
+
+vNAS 和配備 RAID 控制器的 DAS 之間有兩個主要區別。最直接的區別是 vNAS 不需要 RAID 控制器。vNAS 假定底層外部陣列能夠提供與配備 RAID 控制器的 DAS 相同的資料持續性和恢復能力。第二個差別，也是更細微的差別，與 NVRAM 的效能有關。
+
+
+
+[[vnas-nvram]]
+== vNAS NVRAM
+
+ONTAP Select NVRAM 是一個 VMDK。這意味著 ONTAP Select 在區塊尋址裝置（VMDK）之上模擬了一個位元組尋址空間（傳統 NVRAM）。然而，NVRAM 的效能對 ONTAP Select 節點的整體效能至關重要。
+
+對於具有硬體 RAID 控制器的 DAS 設定，硬體 RAID 控制器快取會做為 NVRAM 快取，因為所有寫入 NVRAM VMDK 的作業都會先託管在 RAID 控制器快取中。
+
+對於 VNAS 架構， ONTAP Deploy 會自動為 ONTAP Select 節點配置一個名為「單一實例資料記錄 (SIDL)」的啟動參數。啟用此啟動參數後， ONTAP Select 將繞過 NVRAM ，直接將資料有效負載寫入資料聚合。NVRAM 僅用於記錄 WRITE 操作變更的資料區塊的位址。此功能的優點在於避免了雙重寫入：一次寫入 NVRAM ，另一次寫入是在 NVRAM 被移除時進行的。此功能僅針對 vNAS 啟用，因為對 RAID 控制器快取的本機寫入所帶來的額外延遲可以忽略不計。
+
+SIDL 功能並非與所有 ONTAP Select 儲存效率功能相容。可以使用以下命令在 Aggregate 層級停用 SIDL 功能：
+
+[listing]
+----
+storage aggregate modify -aggregate aggr-name -single-instance-data-logging off
+----
+
+NOTE: 如果關閉 SIDL 功能，寫入效能會受到影響。在停用該 Aggregate 中所有 Volume 上的所有儲存效率原則後，可以重新啟用 SIDL 功能：
+
+[listing]
+----
+volume efficiency stop -all true -vserver * -volume * (all volumes in the affected aggregate)
+----
+
+
+[[collocate-ontap-select-nodes-when-using-vnas-on-esxi]]
+== 在 ESXi 上使用 vNAS 時、共置 ONTAP Select 節點
+
+ONTAP Select 支援在共用儲存設備上建立多節點 ONTAP Select 叢集。ONTAP Deploy 可在同一個 ESXi 主機上設定多個 ONTAP Select 節點，前提是這些節點不屬於同一個叢集。
+
+
+NOTE: 此組態僅適用於 VNAS 環境（共用資料存放區）。使用 DAS 儲存設備時，不支援每個主機有多個 ONTAP Select 執行個體，因為這些執行個體會競爭相同的硬體 RAID 控制器。
+
+ONTAP Deploy 可確保多節點 VNAS 叢集的初始部署不會將相同叢集中的多個 ONTAP Select 執行個體放置在相同主機上。下圖展示了兩個四節點叢集在兩台主機上交叉部署的正確範例。
+
+*多節點 VNAS 叢集的初始部署*
+
+image:ST_14.jpg["多節點 VNAS 叢集的初始部署"]
+
+部署後、ONTAP Select 節點可以在主機之間移轉。這可能會導致非最佳且不受支援的組態、使同一叢集中的兩個或多個 ONTAP Select 節點共用相同的基礎主機。NetApp 建議手動建立 VM 反關聯性規則、以便 VMware 自動維護同一叢集節點之間的實體分隔、而不僅僅是同一 HA 配對的節點。
+
+
+NOTE: 反親和性規則要求在 ESXi 叢集上啟用 DRS。
+
+請參考以下範例，了解如何為 ONTAP Select VM 建立反親和性規則。如果 ONTAP Select 叢集包含多個 HA 配對，則叢集中的所有節點都必須包含在此規則中。
+
+image:ST_15.jpg["VM/ 主機規則"]
+
+image:ST_16.jpg["編輯 VM/ 主機規則"]
+
+由於以下原因之一，來自同一 ONTAP Select 叢集的兩個或多個 ONTAP Select 節點可能位於同一 ESXi 主機上：
+
+* 由於 VMware vSphere 授權限制或 DRS 未啟用，因此不會顯示 DRS。
+* DRS 反關聯性規則會被略過，因為 VMware HA 作業或系統管理員啟動的 VM 移轉具有優先權。
+
+
+
+NOTE: ONTAP Deploy 不會主動監控 ONTAP Select VM 位置。但是、叢集重新整理作業會在 ONTAP Deploy 記錄中反映此不受支援的組態：
+
+image:ST_17.PNG["ONTAP Deploy 日誌"]

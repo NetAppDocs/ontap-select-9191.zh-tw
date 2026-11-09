@@ -1,0 +1,112 @@
+---
+sidebar: sidebar 
+permalink: task_cli_deploy_image_add.html 
+keywords: administer, administering, cli, deploy, ontap select image, add 
+summary: 將 ONTAP Select 映像新增至 Deploy 管理實用程式執行個體。安裝完成後，即可在部署 ONTAP Select 叢集時使用它。 
+---
+= 新增 ONTAP Select 映像至 Deploy
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+將 ONTAP Select 映像新增至 Deploy 管理實用程式執行個體。安裝映像後，即可在部署 ONTAP Select 叢集時使用。
+
+.開始之前
+在 Deploy 中新增任何新的 ONTAP Select 映像之前，應先刪除任何不需要的映像。
+
+
+NOTE: 您只能新增版本早於 Deploy 公用程式執行個體所含原始版本的 ONTAP Select 映像。新增 NetApp 提供的較新版本 ONTAP Select 並非支援的組態。
+
+
+
+[[step-1-download-the-install-image]]
+== 步驟 1：下載安裝映像
+
+若要開始將 ONTAP Select 映像新增至 Deploy 公用程式執行個體的程序，您必須從 NetApp 支援網站下載安裝映像。ONTAP Select 安裝映像的格式為單一壓縮檔案。
+
+.步驟
+. 存取 link:https://mysupport.netapp.com/site/downloads/["NetApp 支援網站下載"^] 頁面。
+. 向下捲動並選擇 *ONTAP Select Image*。
+. 選擇所需的安裝映像版本。
+. 檢閱終端使用者授權合約（EULA），然後選取 *Accept & Continue*。
+. 選擇並下載對應的 *ONTAP Select Image Install* 軟體包。視需要回應所有提示。
+
+
+
+
+[[step-2-upload-the-install-image-to-deploy]]
+== 步驟 2：將安裝映像上傳至 Deploy
+
+取得 ONTAP Select 安裝映像後，必須將該檔案上傳到部署虛擬機器。
+
+.開始之前
+請確認您的本機工作站上已存在安裝映像檔。您還必須擁有 Deploy 管理員使用者帳戶的密碼。
+
+.關於此任務
+本任務介紹了一種將檔案上傳到 Deploy 虛擬機器的方法。可能還有其他更適合您環境的選項。
+
+.步驟
+. 在本機工作站的命令 shell 中，將映像檔上傳到 Deploy 虛擬機器，如下列範例所示：
++
+....
+scp image_v_93_install_esx.tgz admin@10.234.81.101:/home/admin (provide password when prompted)
+....
++
+....
+sftp admin@10.234.81.101 (provide password when prompted)
+put image_v_93_install_esx.tgz
+exit
+....
+
+
+.結果
+節點安裝檔案儲存在 admin 使用者的主目錄中。
+
+
+
+[[step-3-add-the-install-image]]
+== 步驟 3：新增安裝映像
+
+將 ONTAP Select 安裝映像新增至 Deploy 映像目錄，以便在部署新叢集時可以使用。
+
+.開始之前
+您必須知道安裝映像檔案已放置在 Deploy 公用程式虛擬機器的哪個目錄中。假設該檔案位於管理員的主目錄中。
+
+.步驟
+. 使用系統管理員（admin）帳戶透過 SSH 登入 Deploy 實用程式 CLI。
+. 啟動 Bash shell：
++
+[source, cli]
+----
+shell bash
+----
+. 將安裝映像檔放入 images 目錄中，如下列範例所示：
++
+`tar -xf image_v_93_install_esx.tgz -C /opt/netapp/images/`
+
+
+
+
+
+[[step-4-display-the-available-install-images]]
+== 步驟 4：顯示可用的安裝映像
+
+顯示部署新叢集時可用的 ONTAP Select 映像。
+
+.步驟
+. 存取 Deploy 公用程式虛擬機器上的線上文件網頁，並使用系統管理員（admin）帳戶登入：
++
+`\http://<FQDN|IP_ADDRESS>/api/ui`
+
++
+使用 Deploy 虛擬機器的網域名稱或 IP 位址。
+
+. 導覽至頁面底部，選擇 *Deploy*，然後選擇 *GET /images*。
+. 選擇 *Try it out!* 以顯示可用的 ONTAP Select 映像。
+. 確認所需的映像可用。
+

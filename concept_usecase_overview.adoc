@@ -1,0 +1,66 @@
+---
+sidebar: sidebar 
+permalink: concept_usecase_overview.html 
+keywords: ontap select, business use case overview, deployment, storage, development and testing 
+summary: ONTAP Select 適用於多種不同類型的應用程式，這得益於 Hypervisor 虛擬化所提供的固有靈活性。 
+---
+= ONTAP Select 業務需求和使用案例
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+ONTAP Select 適用於多種不同類型的應用程式，這得益於 Hypervisor 虛擬化所提供的固有靈活性。
+
+
+
+[[deployment]]
+== 部署
+
+從宏觀層面來看，根據虛擬機器管理程式主機伺服器上的工作負載，您可以採用兩種不同的方式部署 ONTAP Select。
+
+
+
+[[dedicated-deployment]]
+=== 專屬部署
+
+採用專用部署模型，ONTAP Select 的單一執行個體會在主機伺服器上執行。同一台 Hypervisor 主機上不會執行其他重要的處理程序。
+
+
+
+[[collocated-deployment]]
+=== 共置部署
+
+在共置部署模型中，ONTAP Select 與其他工作負載共用主機。具體來說，還有額外的虛擬機器，每個虛擬機器通常執行運算應用程式。這些運算工作負載位於 ONTAP Select 叢集本機。此模型支援特定的應用程式和部署需求。與專用部署模型一樣，每個 ONTAP Select 虛擬機器都必須在單獨的專用 Hypervisor 主機上執行。
+
+
+
+[[storage]]
+== 儲存
+
+ONTAP Select 可用作主要或次要儲存設備，視您的業務需求而定。
+
+
+
+[[primary-storage]]
+=== 主要儲存設備
+
+在某些情況下、您可以選擇將 ONTAP Select 部署為主要儲存平台。這些類型的實作各不相同、取決於應用程式的工作負載特性以及您的業務目標。
+
+
+
+[[disaster-recovery-and-secondary-storage]]
+=== 災難復原和次要儲存設備
+
+您可以使用 ONTAP Select 來部署額外的儲存空間，從而增強主儲存容量。這些額外的儲存空間可用於支援貴組織的災難復原工作和資料備份計畫。
+
+
+
+[[development-and-testing]]
+== 開發與測試
+
+在組織內部署各種應用程式時，您可以將 ONTAP Select 作為整體應用程式開發和測試流程的組成部分。例如，您可能需要暫時儲存來保存測試輸入或輸出資料。此類部署的持續時間會根據應用程式的特性和需求而有所不同。

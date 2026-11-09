@@ -1,0 +1,129 @@
+---
+sidebar: sidebar 
+permalink: concept_nw_concepts_chars.html 
+keywords: ontap select, networking concepts, cluster characteristics 
+summary: 首先熟悉適用於 ONTAP Select 環境的一般網路概念。然後探索單節點和多節點叢集的具體特性和可用選項。 
+---
+= ONTAP Select 網路概念和特性
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+首先熟悉適用於 ONTAP Select 環境的一般網路概念。然後探索單節點和多節點叢集的具體特性和可用選項。
+
+
+
+[[physical-networking]]
+== 實體網路
+
+實體網路主要透過提供底層第二層交換基礎架構來支援 ONTAP Select 叢集部署。與實體網路相關的組態包括 Hypervisor 主機和更廣泛的交換網路環境。
+
+
+
+[[host-nic-options]]
+=== 主機 NIC 選項
+
+每個 ONTAP Select Hypervisor 主機必須配置兩個或四個實體連接埠。您選擇的確切組態取決於多種因素，包括：
+
+* 叢集包含一台還是多台 ONTAP Select 主機
+* 使用哪種 hypervisor 作業系統
+* 虛擬交換器的設定方式
+* 連結是否使用 LACP
+
+
+
+
+[[physical-switch-configuration]]
+=== 實體交換器組態
+
+您必須確保實體交換器的組態支援 ONTAP Select 部署。實體交換器與 Hypervisor 型虛擬交換器整合。您選擇的確切組態取決於多種因素。主要考量包括下列項目：
+
+* 您將如何保持內部網路和外部網路之間的隔離？
+* 您是否會維持資料與管理網路之間的分離？
+* 第二層 VLAN 將如何設定？
+
+
+
+
+[[logical-networking]]
+== 邏輯網路
+
+ONTAP Select 使用兩個不同的邏輯網路，根據類型分隔流量。具體來說，流量可以在叢集內的主機之間流動，也可以流向儲存用戶端和叢集外的其他機器。由 hypervisor 管理的虛擬交換器有助於支援邏輯網路。
+
+
+
+[[internal-network]]
+=== 內部網路
+
+在多節點叢集部署中,各個 ONTAP Select 節點透過隔離的「內部」網路進行通訊。此網路不會暴露在 ONTAP Select 叢集中的節點外部,也無法從外部存取。
+
+
+NOTE: 內部網路僅存在於多節點叢集中。
+
+內部網路具有以下特性：
+
+* 用於處理 ONTAP 叢集內部流量，包括：
++
+** 叢集
+** 高可用性互連 （HA-IC）
+** RAID Synch Mirror（RSM）
+
+
+* 基於 VLAN 的單層二層網路
+* 靜態 IP 位址由 ONTAP Select 分配：
++
+** 僅限 IPv4
+** 未使用 DHCP
+** 連結本機位址
+
+
+* MTU 大小預設為 9000 位元組，可在 7500-9000 範圍內（含）進行調整
+
+
+
+
+[[external-network]]
+=== 外部網路
+
+外部網路處理 ONTAP Select 叢集節點與外部儲存用戶端以及其他機器之間的流量。外部網路是每個叢集部署的組成部分，具有以下特點：
+
+* 用於處理 ONTAP 流量，包括：
++
+** 資料 (NFS、CIFS、iSCSI)
+** 管理（叢集和節點；選用 SVM）
+** 叢集間（選用）
+
+
+* 選擇性支援 VLAN：
++
+** 資料連接埠群組
+** 管理連接埠群組
+
+
+* 根據管理員的組態選擇所指派的 IP 位址：
++
+** IPv4 或 IPv6
+
+
+* 預設 MTU 大小為 1500 位元組（可調整）
+
+
+所有規模的叢集都存在外部網路。
+
+
+
+[[virtual-machine-networking-environment]]
+== 虛擬機器網路環境
+
+Hypervisor 主機提供多種網路功能。
+
+ONTAP Select 依賴透過虛擬機器公開的以下功能：
+
+虛擬機器連接埠:: ONTAP Select 可以使用多個連接埠。這些連接埠的分配和使用取決於多種因素，包括叢集的大小。
+虛擬交換器:: 虛擬機器管理程式環境中的虛擬交換器軟體（無論是 vSwitch（VMware）或 Open vSwitch（KVM））會將虛擬機器暴露的連接埠與實體乙太網路 NIC 連接埠連接起來。您必須根據您的環境，為每個 ONTAP Select 主機設定 vSwitch。
+

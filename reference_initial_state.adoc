@@ -1,0 +1,54 @@
+---
+sidebar: sidebar 
+permalink: reference_initial_state.html 
+keywords: install, installing, initial state, cluster initial state 
+summary: 您應該了解叢集部署後的初始狀態，並根據您的環境需求配置叢集。 
+---
+= 部署後 ONTAP Select 叢集的初始狀態
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+您應該了解叢集部署後的初始狀態，並根據您的環境需求配置叢集。
+
+ONTAP Select 叢集建立後具有以下幾個特點。
+
+
+NOTE: 限制 ONTAP 管理員帳戶的角色和權限可能會限制 ONTAP Select Deploy 管理叢集的能力。如需詳細資訊，請參閱知識庫文章 link:https://kb.netapp.com/onprem/ontap/ONTAP_Select/OTS_Deploy_cluster_refresh_fails_with_error%3A_ONTAPSelectSysCLIVersionFailed_zapi_returned_bad_status_0%3A_None["OTS Deploy 叢集重新整理失敗並出現錯誤"^]。
+
+.LIF
+指派的客戶指定 LIF 有兩種類型：
+
+* 叢集管理（每個叢集一個）
+* 節點管理 (每個節點一個)
+
+
+
+NOTE: 多節點叢集具有內部網路，其中包含自動產生的 LIF。
+
+.SVM
+三個 SVM 處於作用中狀態：
+
+* 管理 SVM
+* 節點 SVM
+* 系統（叢集）SVM
+
+
+
+NOTE: 資料 SVM 並非 ONTAP Select 叢集部署的一部分。它們必須由叢集管理員在部署後建立。如需詳細資訊，請參閱 https://docs.netapp.com/us-en/ontap/nfs-config/create-svms-data-access-task.html["建立 SVM"^]。
+
+.Aggregate
+根 Aggregate 已建立。
+
+.功能
+所有功能均已獲得授權並可供使用。SnapLock 和 FabricPool 都需要個別授權。
+
+.相關資訊
+* link:https://docs.netapp.com/us-en/ontap/system-admin/types-svms-concept.html["叢集中包含的 SVM 類型"^]
+* link:reference_lic_ontap_features.html["預設授權的 ONTAP 功能"]
+

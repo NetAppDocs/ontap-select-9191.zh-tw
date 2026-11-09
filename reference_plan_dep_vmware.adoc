@@ -1,0 +1,131 @@
+---
+sidebar: sidebar 
+permalink: reference_plan_dep_vmware.html 
+keywords: plan, planning, ontap select deploy, vmware requirements 
+summary: 在 VMware 環境中安裝 ONTAP Select Deploy 公用程式之前，您應該考慮 VMware 環境特有的幾個要求和限制。 
+---
+= ONTAP Select Deploy 虛擬機器管理程式主機考量事項
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+您應該考慮與 hypervisor 主機相關的幾個規劃問題。
+
+
+CAUTION: 除非獲得 NetApp 技術支援人員的指示，否則您不應直接修改 ONTAP Select 虛擬機的組態。虛擬機器只能透過 Deploy 管理公用程式進行設定和修改。未經 NetApp 技術支援人員協助，在 Deploy 公用程式之外對 ONTAP Select 虛擬機器進行變更可能會導致虛擬機器故障並使其無法使用。
+
+
+
+[[hypervisor-independent]]
+== 獨立於 Hypervisor
+
+ONTAP Select 和 ONTAP Select Deploy 管理公用程式皆與 Hypervisor 無關。
+
+以下虛擬機器管理程式同時支援 ONTAP Select 和 ONTAP Select Deploy 管理：
+
+* VMware ESXi
+* 基於核心的虛擬機器 (KVM)
+
+
+
+NOTE: 有關支援平台的其他詳細資訊，請參閱特定虛擬機器管理程序的規劃資訊和 link:reference_release_notes.html["發行說明"]。
+
+.ONTAP Select 節點的 Hypervisor 和管理公用程式
+Deploy 管理實用程式和 ONTAP Select 節點均以虛擬機器形式運作。您為 Deploy 公用程式所選擇的 Hypervisor 與為 ONTAP Select 節點所選的 Hypervisor 相互獨立。在配對這兩者時，您擁有完全的靈活度：
+
+* 在 VMware ESXi 上執行的 Deploy 公用程式可以建立和管理 VMware ESXi 或 KVM 上的 ONTAP Select 叢集。
+* 在 KVM 上執行的 Deploy 公用程式可以在 VMware ESXi 或 KVM 上建立和管理 ONTAP Select 叢集。
+
+
+.每個主機有一個或多個 ONTAP Select 節點執行個體
+每個 ONTAP Select 節點都作為獨立的虛擬機器運作。您可以在同一台 Hypervisor 主機上建立多個節點，但需遵守下列限制：
+
+* 來自單一 ONTAP Select 叢集的多個節點無法在同一台主機上執行。特定主機上的所有節點都必須來自不同的 ONTAP Select 叢集。
+* 您必須使用外部儲存設備。
+* 如果使用軟體 RAID，則只能在主機上部署一個 ONTAP Select 節點。
+
+
+.叢集內節點的 Hypervisor 一致性
+ONTAP Select 叢集中的所有主機必須執行相同版本和發行版的 Hypervisor 軟體。
+
+.每台主機上的實體連接埠數量
+您必須將每台主機設定為使用一個、兩個或四個實體連接埠。雖然在設定網路連接埠時具有彈性，但應盡可能遵循以下建議：
+
+* 單節點叢集中的主機應該有兩個實體連接埠。
+* 多節點叢集中的每個主機都應該有四個實體連接埠
+
+
+.將 ONTAP Select 與基於 ONTAP 硬體的叢集整合
+您無法直接將 ONTAP Select 節點新增至基於硬體的 ONTAP 叢集。但是、您可以選擇在 ONTAP Select 叢集和基於硬體的 ONTAP 叢集之間建立叢集對等關係。
+
+
+
+[[vmware-hypervisor-environment]]
+== VMware Hypervisor 環境
+
+在 VMware 環境中安裝 ONTAP Select Deploy 公用程式之前，您應該考慮 VMware 環境特有的幾個要求和限制。
+
+.ESXi 主機伺服器硬體需求
+您的 ESXi 虛擬機器管理程式主機必須符合若干最低資源需求。請檢查部署 ONTAP Select 的主機是否符合以下基本要求：
+
+* ESXi 伺服器：
++
+** 硬體和軟體必須是 64 位元
+** 必須遵循與 ONTAP Select 節點所定義的相同支援版本
+
+
+* 虛擬 CPU （2）
+* 虛擬記憶體 (4 GB)
+* 儲存空間 (40 GB)
+* 已啟用 DHCP （也可指派靜態 IP 位址）
+
+
+.網路連線能力
+請檢查 ONTAP Select Deploy 虛擬機器網路介面是否已配置，並具有單一管理 IP 位址。您可以使用 DHCP 動態指派 IP 位址，也可以手動設定靜態 IP 位址。
+
+根據您的部署決策，部署虛擬機器必須能夠連接到其管理的 vCenter 伺服器、ESXi Hypervisor 主機和 ONTAP Select 節點。您必須設定防火牆以允許所需的流量。
+
+Deploy 使用 VMware VIX API 與 vCenter 伺服器和 ESXi 主機通訊。首先，它使用基於 SSL 的 SOAP 協定在 TCP 連接埠 443 上建立連線。之後，它會在連接埠 902 上使用 SSL 協定開啟連線。此外，Deploy 也會發出 PING 指令來驗證您指定的 IP 位址上是否存在 ESXi 主機。
+
+此外，Deploy 必須能夠使用以下協定與 ONTAP Select 節點和叢集管理 IP 位址進行通訊：
+
+* PING 指令（ICMP）
+* SSH（port 22）
+* SSL（port 443）
+
+
+.支援 IP 版本 4
+ONTAP Select Deploy 僅支援 IP 版本 4（IPv4）。不支援 IP 版本 6（IPv6）。此限制對 ONTAP Select 的影響如下：
+
+* 您必須將 IPv4 位址指派給 Deploy 虛擬機器的管理 LIF。
+* Deploy 無法建立配置為在 ONTAP LIF 上使用 IPv6 的 ONTAP Select 節點。
+
+
+
+
+[[vmware-vcenter-server-considerations]]
+== VMware vCenter 伺服器注意事項
+
+.VMware vSphere ESA 的權限
+要在 vCenter 中建立和管理 vSAN Express Storage Architecture (ESA)，您需要以下 vSphere 內容庫權限：
+
+
+NOTE: 要存取內容庫權限，管理員需要授予您在 vCenter Server 中存取全域權限的權限。
+
+* 新增程式庫項目
+* 建立本機程式庫
+* 刪除程式庫項目
+* 刪除本機程式庫
+* 下載檔案
+* 讀取儲存設備
+* 更新檔案
+* 更新程式庫
+* 更新程式庫項目
+* 更新本機程式庫
+* 檢視組態設定
+

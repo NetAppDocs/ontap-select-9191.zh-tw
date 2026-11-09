@@ -1,0 +1,41 @@
+---
+sidebar: sidebar 
+permalink: concept_api_how_access.html 
+keywords: rest api, deploy rest api, rest, access, accessing, how to access 
+summary: 由於 REST Web 服務固有的靈活性，可以透過多種不同的方式存取 ONTAP Select Deploy API。 
+---
+= 了解如何存取 ONTAP Select Deploy API
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+由於 REST Web 服務固有的靈活性，可以透過多種不同的方式存取 ONTAP Select Deploy API。
+
+
+NOTE: ONTAP Select Deploy 中所包含的 REST API 被指派了一個版本號碼。此 API 版本號與 Deploy 版本號無關。ONTAP Select 9.19.1 Deploy 管理公用程式包含 REST API 的版本 3。
+
+
+
+[[deploy-utility-native-user-interface]]
+== 部署公用程式原生使用者介面
+
+存取 API 的主要方式是透過 ONTAP Select Deploy Web 使用者介面。瀏覽器會呼叫 API 並根據使用者介面的設計重新格式化資料。您也可以透過 Deploy 公用程式命令列介面存取 API。
+
+
+
+[[ontap-select-deploy-online-documentation-page]]
+== ONTAP Select Deploy 線上文件頁面
+
+使用瀏覽器時，ONTAP Select Deploy 線上文件頁面提供了另一種存取途徑。除了可以直接執行各個 API 呼叫之外，頁面還包含 API 的詳細描述，包括每個呼叫的輸入參數和其他選項。API 呼叫以不同的功能領域或類別進行組織。
+
+
+
+[[custom-program]]
+== 自訂程式
+
+您可以使用多種程式語言和工具存取 Deploy API。常用的語言包括 Python、Java 和 cURL。使用該 API 的程式、腳本或工具可作為 REST Web 服務用戶端。使用程式語言可以幫助您更好地理解 API，並有機會實現 ONTAP Select 部署的自動化。

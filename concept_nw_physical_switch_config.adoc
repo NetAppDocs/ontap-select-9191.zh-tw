@@ -1,0 +1,51 @@
+---
+sidebar: sidebar 
+permalink: concept_nw_physical_switch_config.html 
+keywords: ontap select, upstream physical switch configuration 
+summary: 基於單交換器和多交換器環境的上游實體交換器組態詳細資料。 
+---
+= ONTAP Select 實體交換器組態
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+基於單交換器和多交換器環境的上游實體交換器組態詳細資料。
+
+在製定從虛擬交換器層到實體交換器的連線決策時，應仔細考慮。內部叢集流量與外部資料服務的隔離應延伸至上游實體網路層，並透過第 2 層 VLAN 提供的隔離來實現。
+
+實體交換器連接埠應配置為主幹連接埠。ONTAP Select 外部流量可以透過兩種方式在多個第二層網路中進行分隔。一種方法是使用 ONTAP VLAN 標記虛擬連接埠與單一連接埠群組。另一種方法是在 VST 模式下為管理連接埠 e0a 指派單獨的連接埠群組。您還必須根據 ONTAP Select 版本以及單節點或多節點組態，將資料連接埠指派給 e0b 和 e0c/e0g。如果外部流量在多個第二層網路中進行分隔，則上行鏈路實體交換器連接埠的允許 VLAN 清單中應包含這些 VLAN。
+
+ONTAP Select 內部網路流量使用由連結本機 IP 位址定義的虛擬介面進行傳輸。由於這些 IP 位址不可路由，因此叢集節點之間的內部流量必須透過單一二層網路傳輸。ONTAP Select 叢集節點之間不支援路由躍點。
+
+
+
+[[shared-physical-switch]]
+== 共享實體交換器
+
+下圖展示了多節點 ONTAP Select 叢集中單一節點可能使用的交換器配置。在本例中，vSwitches 承載內部和外部網路連接埠群組的實體 NIC 均連接到同一上游交換器。交換器流量透過位於不同 VLAN 中的廣播網域進行隔離。
+
+
+NOTE: 對於 ONTAP Select 內部網路，標記是在連接埠群組層級完成的。雖然以下範例對外部網路使用了 VGT，但此連接埠群組同時支援 VGT 和 VST。
+
+*使用共用實體交換器進行網路組態*
+
+image:DDN_06.jpg["使用共用實體交換器的網路組態"]
+
+
+NOTE: 在此組態中，共享交換器會成為單點故障。如果可能、應使用多個交換器、以防止實體硬體故障導致叢集網路中斷。
+
+
+
+[[multiple-physical-switches]]
+== 多個實體交換器
+
+當需要冗餘時，應使用多個實體網路交換器。下圖展示了多節點 ONTAP Select 叢集中一個節點的建議配置。內部和外部連接埠群組的 NIC 分別連接到不同的實體交換器，從而避免單一硬體交換器故障對使用者造成影響。交換器之間配置了虛擬連接埠通道，以防止生成樹問題。
+
+*使用多個實體交換器的網路組態*
+
+image:DDN_07.jpg["使用多個實體交換器的網路組態"]

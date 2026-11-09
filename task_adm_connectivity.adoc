@@ -1,0 +1,42 @@
+---
+sidebar: sidebar 
+permalink: task_adm_connectivity.html 
+keywords: administer, administering, web, connectivity, network connectivity, network checker 
+summary: 您可以測試內部叢集網路上兩個或多個 ONTAP Select 節點之間的網路連線。通常，您會在部署多節點叢集之前執行此測試，以偵測可能導致操作失敗的問題。 
+---
+= 確認 ONTAP Select 節點之間的連線能力
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+您可以測試內部叢集網路上兩個或多個 ONTAP Select 節點之間的網路連線。通常，您會在部署多節點叢集之前執行此測試，以偵測可能導致操作失敗的問題。
+
+.開始之前
+測試中包含的所有 ONTAP Select 節點都必須進行配置並通電。
+
+.關於此任務
+每次啟動測試時，背景都會建立新的程序執行，並指派一個唯一的執行識別碼。一次只能有一個執行處於作用中狀態。
+
+測試有兩種控制其運作的模式：
+
+* 快速此模式執行基本的非中斷性測試。它會執行 PING 測試，以及網路 MTU 大小和 vSwitch 的測試。
+* 擴展模式會對所有冗餘網路路徑執行更全面的測試。如果在作用中的 ONTAP Select 叢集上執行此模式，可能會影響叢集的效能。
+
+
+
+NOTE: 建議您在建立多節點叢集之前，一律先執行快速測試。快速測試成功完成後，您可以根據正式作業需求選擇性地執行延伸測試。
+
+.步驟
+. 使用系統管理員帳戶登入 Deploy 公用程式 Web 使用者介面。
+. 選擇頁面頂端的 *Administration* 標籤，然後選擇 *Network Checker*。
+. 選取 *Start New Run*，然後選取 HA 配對的主機和網路
++
+您可以根據需要新增和設定其他 HA 配對。
+
+. 選取 *Start* 以開始網路連線測試。
+

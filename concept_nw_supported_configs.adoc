@@ -1,0 +1,45 @@
+---
+sidebar: sidebar 
+permalink: concept_nw_supported_configs.html 
+keywords: ontap select, supported network configurations 
+summary: 選擇最佳硬體並設定網路，以最佳化效能與恢復能力。 
+---
+= 支援的 ONTAP Select 網路組態
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+選擇最佳硬體並設定網路，以最佳化效能與恢復能力。
+
+伺服器廠商深知客戶需求各異，選擇至關重要。因此，在購買實體伺服器時，網路連線方面有多種選擇。大多數通用系統都配備多種 NIC 選項，提供單一連接埠和多連接埠選項，速度和吞吐量組合各異。這包括對 25Gb/s 和 40Gb/s NIC 適配器以及 VMware ESX 的支援。
+
+由於 ONTAP Select VM 的效能直接取決於底層硬體的特性，因此選擇更高速度的 NIC 來提高 VM 的處理量，可提升叢集效能並改善整體使用者體驗。可以使用四個 10Gb NIC 或兩個更高速度（25/40 Gb/s）的 NIC 來實現高效能網路配置。此外，還支援其他多種組態。對於雙節點叢集，支援 4 個 1Gb 連接埠或 1 個 10Gb 連接埠。對於單節點叢集，支援 2 個 1Gb 連接埠。
+
+.網路最低和建議組態
+根據叢集大小，有數種支援的乙太網路組態。
+
+[cols="30,35,35"]
+|===
+| 叢集大小 | 最低需求 | 建議 
+
+
+| 單節點叢集 | 2 x 1GbE | 2 x 10GbE 
+
+
+| 雙節點叢集或 MetroCluster SDS | 4 x 1GbE 或 1 x 10GbE | 2 x 10GbE 
+
+
+| 四節點、六節點、八節點、十節點或十二節點叢集 | 2 x 10GbE | 4 x 10GbE 或 2 x 25/40GbE 
+|===
+
+NOTE: 由於每種拓撲可能需要在不同的 NIC 群組組態之間進行轉換，因此不支援在執行中的叢集上進行單一連結拓撲與多重連結拓撲之間的轉換。
+
+.使用多個實體交換器的網路組態
+當有足夠的硬體可用時、NetApp 建議使用下圖所示的多交換器組態、因為這樣可以增加對實體交換器故障的保護。
+
+image:BP_02.jpg["使用多個實體交換器的網路組態"]

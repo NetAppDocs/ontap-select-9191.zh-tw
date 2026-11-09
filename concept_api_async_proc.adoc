@@ -1,0 +1,75 @@
+---
+sidebar: sidebar 
+permalink: concept_api_async_proc.html 
+keywords: rest api, deploy rest api, rest, asynchronous processing, job object 
+summary: 某些部署 API 調用，特別是建立或修改資源的調用，可能比其他調用耗時更長。ONTAP Select Deploy 會非同步處理這些耗時較長的請求。 
+---
+= 使用 ONTAP Select 的 Job 物件進行非同步處理
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+某些部署 API 調用，特別是建立或修改資源的調用，可能比其他調用耗時更長。ONTAP Select Deploy 會非同步處理這些耗時較長的請求。
+
+
+
+[[asynchronous-requests-described-using-job-object]]
+== 使用 Job 物件描述的非同步請求
+
+在進行非同步執行的 API 呼叫後，HTTP 回應代碼 202 表示請求已成功驗證並被接受，但尚未完成。此請求會作為背景工作進行處理，在向用戶端發出初始 HTTP 回應後仍會繼續執行。回應中包含錨定該請求的 Job 物件，以及其唯一識別碼。
+
+
+NOTE: 您應該參考 ONTAP Select Deploy 線上文件頁面，以確定哪些 API 呼叫是非同步運作的。
+
+
+
+[[query-the-job-object-associated-with-an-api-request]]
+== 查詢與 API 請求相關聯的 Job 物件
+
+HTTP 回應中傳回的 Job 物件包含多個屬性。您可以查詢 state 屬性來決定請求是否成功完成。Job 物件可以處於以下狀態之一：
+
+* 已排入佇列
+* 執行中
+* 成功
+* 失敗
+
+
+在輪詢 Job 物件以偵測任務的終止狀態（成功或失敗）時，可以使用兩種技術：
+
+* 標準輪詢請求會立即傳回目前 Job 狀態。
+* 長輪詢請求工作狀態僅在發生下列其中一種情況時傳回：
++
+** 狀態變更時間比輪詢請求中提供的日期時間值更近。
+** 逾時值已過期（1 至 120 秒）
+
+
+
+
+標準輪詢和長輪詢使用相同的 API 呼叫來查詢 Job 物件。但是，長輪詢請求包含兩個查詢參數： `poll_timeout` 和 `last_modified`。
+
+
+TIP: 您應該一律使用長輪詢，以減少 Deploy 虛擬機器的工作負載。
+
+
+
+[[general-procedure-for-issuing-an-asynchronous-request]]
+== 發出非同步請求的一般程序
+
+您可以使用下列高階程序來完成非同步 API 呼叫：
+
+. 發出非同步 API 呼叫。
+. 收到 HTTP 回應 202，表示請求已成功接受。
+. 從回應正文中提取 Job 物件的識別碼。
+. 在一個迴圈中，在每個週期內執行以下操作：
++
+.. 透過長輪詢請求取得工作的目前狀態
+.. 如果工作處於非終止狀態（已排入佇列、執行中），請再次執行迴圈。
+
+
+. 當工作達到終止狀態（成功、失敗）時停止。
+

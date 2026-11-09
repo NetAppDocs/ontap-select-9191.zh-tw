@@ -1,0 +1,112 @@
+---
+sidebar: sidebar 
+permalink: task_adm_support.html 
+keywords: administer, administering, web, diagnostics, support 
+summary: 作為 ONTAP Select 管理的一部分，您可以執行幾個相關的診斷和支援任務。 
+---
+= 管理 ONTAP Select 診斷和支援
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+作為 ONTAP Select 管理的一部分，您可以執行幾個相關的診斷和支援任務。
+
+
+
+[[configure-the-deploy-system]]
+== 配置 Deploy 系統
+
+您應該設定影響 Deploy 公用程式運作方式的基本系統組態參數。
+
+.關於此任務
+部署組態資料由 AutoSupport 使用。
+
+.步驟
+. 使用系統管理員帳戶登入 Deploy 公用程式 Web 使用者介面。
+. 選擇頁面頂部的 *Administration* 標籤。
+. 選擇 *Settings & AutoSupport*，然後選擇 image:icon_pencil.gif["編輯"]。
+. 請根據您的環境提供適當的組態資料，然後選取 *Modify* 。
++
+如果您使用 Proxy 伺服器、您可以依照下列方式設定 Proxy URL：
+`\http://USERNAME:PASSWORD@<FQDN|IP>:PORT`
+
++
+範例
+`\http://user1:mypassword@proxy.company-demo.com:80`
+
+
+
+
+
+[[display-the-ontap-select-deploy-event-messages]]
+== 顯示 ONTAP Select Deploy 事件訊息
+
+ONTAP Select Deploy 實用程式包含一個事件日誌記錄功能，用於提供有關系統活動的資訊。您應該查看事件日誌的內容，以便調試任何問題，或在技術支援人員的指導下進行查看。
+
+.關於此任務
+您可以根據多個特徵篩選事件訊息清單，包括：
+
+* 狀態
+* 類型
+* 類別
+* 執行個體
+* 時間
+* 說明
+
+
+.步驟
+. 使用系統管理員帳戶登入 Deploy 公用程式 Web 使用者介面。
+. 選擇頁面頂部的 *Administration* 標籤。
+. 選取 *Events & Jobs*，然後選取 *Events*。
+. （選用）選取 *Filter* 並建立篩選器以限制顯示的事件訊息。
+
+
+
+
+[[enable-autosupport]]
+== 啟用 AutoSupport
+
+您可以根據需要啟用和停用 AutoSupport 功能。
+
+.關於此任務
+AutoSupport 是 NetApp 支援 ONTAP Select 時所使用的主要疑難排解工具。因此，除非絕對必要，否則不應停用 AutoSupport。如果您確實停用了 AutoSupport，仍會收集資料，但不會傳送至 NetApp。
+
+.步驟
+. 使用系統管理員帳戶登入 Deploy 公用程式 Web 使用者介面。
+. 選擇頁面頂部的 *Administration* 標籤。
+. 選擇 *Settings & AutoSupport*，然後選擇 image:icon_kebab.gif["選項"]。
+. 根據需要啟用或停用 AutoSupport 功能。
+
+
+
+
+[[generate-and-download-an-autosupport-package]]
+== 產生並下載 AutoSupport 套件
+
+ONTAP Select 包含產生 AutoSupport 套件的功能。您應該產生套件來偵錯任何問題，或者在技術支援人員的指導下進行操作。
+
+.關於此任務
+您可以在 NetApp 支援的指導下產生以下 AutoSupport 套件：
+
+* 部署記錄 ONTAP Select Deploy 公用程式所建立的記錄檔
+* 疑難排解 有關 Hypervisor 主機和 ONTAP Select 節點的疑難排解和偵錯資訊
+* 效能 有關 Hypervisor 主機和 ONTAP Select 節點的效能資訊
+
+
+.步驟
+. 使用系統管理員帳戶登入 Deploy 公用程式 Web 使用者介面。
+. 選擇頁面頂部的 *Administration* 標籤。
+. 選擇 *Settings & AutoSupport*，然後選擇 image:icon_kebab.gif["選項"]。
+. 選擇 *Generate*。
+. 選取類型並提供套件說明；您也可以選擇性地提供案例編號。
+. 選擇 *Generate*。
++
+每個 AutoSupport 套件都會指派唯一的序列識別編號。
+
+. （選用）在 *AutoSupport History* 下選擇正確的套件，然後選擇下載圖示，將 AutoSupport 檔案儲存至本機工作站。
+

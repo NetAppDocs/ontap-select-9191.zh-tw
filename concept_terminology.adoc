@@ -1,0 +1,111 @@
+---
+sidebar: sidebar 
+permalink: concept_terminology.html 
+keywords: terminology, key concepts, concepts 
+summary: 當您開始探索 ONTAP Select 並規劃部署時，首先熟悉術語和關鍵概念會很有幫助。 
+---
+= ONTAP Select 術語和關鍵概念
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+當您開始探索 ONTAP Select 並規劃部署時，首先熟悉術語和關鍵概念會很有幫助。
+
+ONTAP Select Deploy:: ONTAP Select Deploy 是用於部署 ONTAP Select 叢集的管理實用程式。Deploy 實用程式在專用的 Linux 虛擬機器中執行。您可以透過 Web 使用者介面、CLI 管理 Shell 和 REST API 存取 Deploy 實用程式。
+基於核心的虛擬機器:: 基於核心的虛擬機器（KVM）是 Linux 核心的一項虛擬化功能，它使 Linux 核心能夠充當 Hypervisor 平台。支援多種客體作業系統。
+Hypervisor 主機與 ONTAP Select 節點:: _hypervisor host_ 是承載 ONTAP Select 虛擬機器的核心硬體平台。當 ONTAP Select 虛擬機器部署在 hypervisor host 上並且處於活動狀態時，它就被視為 _ONTAP Select node_。
+ONTAP Select 叢集:: 您可以建立由一個、兩個、四個、六個、八個、十個或十二個節點組成的 _ONTAP Select 叢集_。多節點叢集始終包含一個或多個 HA 配對。例如，一個四節點叢集包含兩個 HA 配對。單節點叢集不提供 HA 功能。
+準備 Hypervisor 主機環境:: 在使用 Deploy 管理公用程式部署 ONTAP Select 叢集之前、您需要準備執行 ONTAP Select 的 Hypervisor 主機、包括儲存設備和網路環境。此主機預先組態是根據目前的需求和限制、在 ONTAP Select 產品之外完成。
+評估部署與正式作業部署:: 每個 ONTAP Select 節點都以_評估授權_或_購買授權_執行。評估授權可讓您在將 ONTAP Select 部署到正式作業環境之前對其進行評估。評估授權會自動產生並套用。如果您要在正式作業環境中部署叢集、則必須購買授權、這需要您選擇：
++
+--
+* 授權模式
+* 儲存容量
+* 平台授權方案
+
+
+--
+Capacity Tiers 授權模式:: 容量層級授權模式是 ONTAP Select 部署中儲存授權的原始選項。它基於與 NetApp AFF 和 FAS 一起使用的 ONTAP 模型。每個節點都需要單獨的授權。儲存容量鎖定到節點且永久有效（無需續訂）。
+Capacity Pools 授權模式:: 容量資源池授權模式是隨 ONTAP Select 9.5 使用 Deploy 2.10 推出。每個儲存容量資源池都需要個別的授權。容量資源池授權會鎖定至授權管理程式執行個體（即 Deploy 執行個體）、且必須根據您的購買條款進行更新。您可以在組織中授權及使用任意數量的容量資源池。不過、由於容量資源池是由 ONTAP Select 節點共用、因此通常所需的授權數量會少於容量層授權。
+授權管理程式:: 授權管理程式是支援容量資源池授權的軟體元件。目前是 Deploy 管理公用程式的一部分。LM 會從其管理的共享資源池租用儲存設備給 ONTAP Select 節點。_授權鎖定 ID_ 是唯一識別每個 LM 執行個體、進而識別每個 Deploy 執行個體的數字字串。您必須同時使用容量資源池授權序號和 LLID 來產生授權檔案。
+平台授權產品:: 有三種授權方案可供選擇，購買授權時，這些方案決定了 ONTAP Select 虛擬機器的容量大小：
++
+--
+* 標準
+* 高級
+* 高級 XL
+
+
+--
+
+
+如需更多資訊，請參閱 link:concept_workflow_deploy.html["方案"] 和 link:concept_lic_evaluation.html["授權"] 這兩個部分。
+
+儲存資源池與資料存放區:: ONTAP Select _儲存資源池_ 是一個邏輯資料容器，旨在抽象化和隱藏底層實體儲存設備。儲存資源池與 Hypervisor 無關。當部署在 ESXi Hypervisor 主機上時、ONTAP Select 儲存資源池與 VMware _資料存放區_ 同義。
+叢集 MTU:: 叢集 MTU 是一項功能，可讓您配置 ONTAP Select 多節點叢集內部網路使用的 MTU 大小。Deploy 管理公用程式會在您設定 HA 配對時調整 MTU 大小，以容納您的連網環境。您也可以手動設定該值。
+ONTAP Select vNAS:: ONTAP Select vNAS 解決方案可讓 ONTAP Select 節點存取外部儲存設備上的 VMware 資料存放區。使用 ONTAP Select vNAS 時、不再需要本機 RAID 控制器；RAID 功能由遠端儲存設備提供。ONTAP Select vNAS 可透過下列方式進行設定：
++
+--
+* VMware vSAN
+* 通用外部儲存陣列
+
+
+--
+
+
+無論哪種情況，都必須先設定外部儲存設備，然後再建立 ONTAP Select 叢集或擴充現有節點的儲存容量。
+
+在 ESXi VM 上重新託管節點:: 當您部署使用透過 ONTAP Select vNAS 解決方案（VMware vSAN 或通用外部儲存陣列）提供的外部儲存的叢集時，可以透過利用下列 VMware 功能的操作來移動託管 ONTAP Select 節點的 ESXi 虛擬機器：
++
+--
+* vMotion
+* 高可用性 (HA)
+* 分散式資源排程器 (DRS)
++
+ONTAP Select Deploy 公用程式會偵測虛擬機器的移動，作為在叢集上執行作業的一部分，例如：
+
+* 叢集上線
+* 叢集離線
+* 新增儲存設備
++
+當虛擬機器遷移時，Deploy 實用程式會更新其內部資料庫並配置新的 ESXi 主機。在虛擬機器遷移和 Deploy 更新完成之前，ONTAP Select 節點上執行的所有操作都將被封鎖。
+
+
+
+--
+適用於 KVM 的 Open vSwitch:: Open vSwitch (OVS) 是一款支援多種網路協定的虛擬交換器軟體實作。OVS 是開源軟體，並遵循 Apache License 2.0 授權協議。
+Mediator 服務:: ONTAP Select Deploy 公用程式包含一個中介服務，該服務連接到作用中雙節點叢集中的節點。此服務監控每個 HA 配對，並協助管理故障。
+
+
+
+CAUTION: 如果您有一個或多個作用中的雙節點叢集、則管理叢集的 ONTAP Select Deploy 虛擬機器必須隨時執行。如果 Deploy 虛擬機器停止、則中介服務無法使用、且雙節點叢集的 HA 功能會遺失。
+
+MetroCluster SDS:: MetroCluster SDS 是一項功能，可在部署雙節點 ONTAP Select 叢集時提供額外的組態選項。與典型的雙節點 ROBO 部署不同， MetroCluster SDS 節點之間的距離可以更遠。這種實體隔離支援更多使用案例，例如災難恢復。您必須擁有進階授權或更高版本才能使用 MetroCluster SDS 。此外，節點之間的網路必須符合最低延遲需求。
+認證儲存區:: Deploy 憑證存放區是一個安全的資料庫，用於保存帳戶憑證。它主要用於在建立新叢集時註冊 Hypervisor 主機。如需詳細資訊，請參閱link:concept_workflow_deploy.html["方案"]章節。
+儲存效率:: ONTAP Select 提供的儲存效率選項與 FAS 和 AFF 陣列上的儲存效率選項類似。從概念上講、使用直連儲存（DAS）SSD（使用優質授權）的 ONTAP Select 與 AFF 陣列類似。使用 DAS 與 HDD 的組態以及所有 vNAS 組態應視為與 FAS 陣列類似。這兩種組態的主要差異在於、使用 DAS SSD 的 ONTAP Select 支援內嵌 Aggregate 層級重複資料刪除和 Aggregate 層級背景重複資料刪除。其餘儲存效率選項可用於兩種組態。
++
+--
+vNAS 的預設設定啟用了一項名為單一實例資料日誌記錄（SIDL）的寫入最佳化功能。在 ONTAP Select 9.6 及更高版本中，啟用 SIDL 後，背景 ONTAP 儲存效率功能將會進一步提升。如需詳細資訊，請參閱link:concept_stor_concepts_chars.html["深入探討"]章節。
+
+--
+叢集重新整理:: 建立叢集後、您可以使用 ONTAP 或 Hypervisor 管理工具、在 Deploy 公用程式之外變更叢集或虛擬機器組態。您也可以移轉虛擬機器、這會導致組態變更。發生這些變更時，Deploy 公用程式不會自動更新，可能會與叢集狀態不同步。您可以使用叢集重新整理功能來更新 Deploy 組態資料庫。叢集重新整理可透過 Deploy Web 使用者介面、CLI 管理 shell 和 REST API 使用。
+軟體 RAID:: 使用直連儲存 (DAS) 時，RAID 功能通常由本機硬體 RAID 控制器提供。您也可以將節點配置為使用軟體 RAID，由 ONTAP Select 節點提供 RAID 功能。如果使用軟體 RAID，則不再需要硬體 RAID 控制器。
+
+
+[[ontap-select-image-install]]
+ONTAP Select 映像安裝:: Deploy 管理實用程式僅包含一個版本的 ONTAP Select。此版本為發佈時可用的最新版本。ONTAP Select 映像安裝功能可讓您將早期版本的 ONTAP Select 新增至 Deploy 公用程式實例中，以便在部署 ONTAP Select 叢集時使用。請參閱 link:task_cli_deploy_image_add.html["新增 ONTAP Select 映像以取得更多資訊"]。
+
+
+
+NOTE: 您只能新增版本早於 Deploy 執行個體所含原始版本的 ONTAP Select 映像。不支援在未同時更新 Deploy 的情況下新增較新版本的 ONTAP Select。
+
+部署 ONTAP Select 叢集後進行管理:: 部署 ONTAP Select 叢集後、您可以像設定硬體型 ONTAP 叢集一樣設定該叢集。例如、您可以使用 System Manager 或標準 ONTAP 命令列介面來設定 ONTAP Select 叢集。
+
+
+.相關資訊
+link:task_cli_deploy_image_add.html["新增 ONTAP Select 映像至 Deploy"]

@@ -1,0 +1,36 @@
+---
+sidebar: sidebar 
+permalink: concept_lic_workflow.html 
+keywords: license, licensing, purchase, purchasing, workflow 
+summary: 您可以按照工作流程購買並套用 ONTAP Select 部署的授權。 
+---
+= ONTAP Select 的授權購買工作流程
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+以下工作流程說明如何為您的 ONTAP Select 部署購買和應用授權。購買授權時，您必須選擇授權模式和儲存容量。
+
+確切的程序會因您使用的是 Capacity Tier 或 Capacity Pool 授權而有所不同：
+
+九位數授權序號:: 序號適用於節點（Capacity Tiers）或儲存池（Capacity Pools）
+授權鎖定 ID:: 使用 Capacity Pool 授權時，您必須擁有 Deploy 執行個體的授權鎖定 ID
+授權網站:: 您可以在不同的網站上取得 Capacity Tier 和 Capacity Pool 授權。
+
+
+image:purchased_license_workflow.png["描述為正式作業 ONTAP Select 部署購買和安裝儲存授權的程序。"]
+
+.接下來呢？
+了解 ONTAP Select 授權容量規劃的注意事項：
+
+* link:sizing-capacity-tier-license.html["Capacity Tiers 授權"]
+* link:sizing-capacity-pool-license.html["容量池授權"]
+
+
+.相關資訊
+link:task_adm_licenses.html["了解如何管理 ONTAP Select 授權"]

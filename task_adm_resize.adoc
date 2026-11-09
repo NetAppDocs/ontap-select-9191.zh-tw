@@ -1,0 +1,39 @@
+---
+sidebar: sidebar 
+permalink: task_adm_resize.html 
+keywords: administer, administering, web, resizing nodes, resizing 
+summary: 部署 ONTAP Select 叢集後，您可以使用 Deploy 管理公用程式升級節點的 Hypervisor 執行個體類型。 
+---
+= 調整 ONTAP Select 叢集節點大小
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+部署 ONTAP Select 叢集後，您可以使用 Deploy 管理公用程式升級節點的 Hypervisor 執行個體類型。
+
+
+NOTE: 使用 Capacity Tiers 授權模式和 Capacity Pools 授權模式時，您可以執行叢集節點調整大小作業。
+
+
+NOTE: 僅在 ESXi 上支援調整大小至大型執行個體類型。
+
+.開始之前
+叢集必須處於線上狀態。
+
+.關於此任務
+本工作說明如何使用 Deploy Web 使用者介面。您也可以使用 Deploy CLI 執行執行個體大小調整。無論使用哪個介面、調整大小作業所需的時間都會因多種因素而有很大差異、而且可能需要較長時間才能完成。您只能將節點調整為較大的大小。
+
+.步驟
+. 使用系統管理員帳戶登入 Deploy 公用程式 Web 使用者介面。
+. 選擇頁面頂端的 *Cluster* 標籤，然後從清單中選取所需的叢集。
+. 在叢集詳細資料頁面上，選取頁面右側的齒輪圖示，然後選取 *Instance Resize*。
+. 選擇 *Instance Type* 並提供 ONTAP 認證資料，然後選擇 *Modify*。
+
+
+.完成後
+您必須等待調整大小作業完成。

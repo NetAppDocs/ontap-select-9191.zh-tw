@@ -1,0 +1,242 @@
+---
+sidebar: sidebar 
+permalink: cli-upgrade-esxi.html 
+keywords: administer, administering, cli, esxi, upgrade, esxi 8.0 
+summary: 如果您在 VMware ESXi 上執行 ONTAP Select，則可以將 ESXi 軟體從早期支援的版本升級到 ESXi 8.0 或更高版本。升級前，您應該了解升級流程並選擇合適的升級步驟。 
+---
+= 將 ONTAP Select 升級至 VMware ESXi 8.0 或更新版本
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+如果您在 VMware ESXi 上執行 ONTAP Select，則可以將 ESXi 軟體從早期支援的版本升級到 ESXi 8.0 或更高版本。升級前，您應該了解升級流程並選擇合適的升級步驟。
+
+
+
+[[prepare-to-upgrade-vmware-esxi]]
+== 準備升級 VMware ESXi
+
+在升級託管 ONTAP Select 叢集的 Hypervisor 上的 ESXi 軟體之前、請準備並選擇適合您環境的升級程序。
+
+.步驟
+. *熟悉如何升級 VMware ESXi*
++
+升級 ESXi 軟體是 VMware 所描述並支援的程序。使用 ONTAP Select 時，Hypervisor 升級程序是較大升級程序的一部分。如需詳細資訊，請參閱 VMware 文件。
+
+. *選取升級程序*
++
+有多種升級程序可供使用。您應根據以下條件選擇適用的程序：
+
++
+** ONTAP Select 叢集大小
++
+同時支援單節點叢集和多節點叢集。
+
+** 使用 ONTAP Select Deploy
++
+無論是否使用 Deploy 公用程式，都可以進行升級。
+
++
+
+TIP: 您應該選擇使用 Deploy 管理公用程式的升級程序。
+
++
+使用 Deploy 管理公用程式執行 ESXi 升級是更通用且更可靠的選擇。但是，有時 Deploy 可能無法使用或無法使用。例如，早期版本的 ONTAP Select 和 Deploy 管理公用程式不支援升級到 ESXi 8.0。
+
++
+如果您使用的是早期版本並嘗試升級，可能會導致 ONTAP Select 虛擬機器處於無法啟動的狀態。在這種情況下，您必須選擇不使用 Deploy 的升級流程。
+
+
+
+. *升級 Deploy 管理實用程式*
++
+在使用 Deploy 公用程式執行升級程序之前，您可能需要升級 Deploy 執行個體。通常，您應該升級到最新版本的 Deploy。Deploy 公用程式必須支援您正在使用的 ONTAP Select 版本。如需更多資訊，請參閱 link:reference_release_notes.html["ONTAP Select 發行說明"]。
+
+. *更新程序完成後*
++
+如果您選擇使用 Deploy 公用程式進行升級，則應在所有節點升級完成後使用 Deploy 執行叢集重新整理作業。如需詳細資訊、請參閱重新整理 Deploy 叢集組態。
+
+
+
+
+
+[[upgrade-a-single-node-cluster-using-deploy]]
+== 使用 Deploy 升級單節點叢集
+
+您可以使用 Deploy 管理公用程式作為升級託管 ONTAP Select 單節點叢集的 VMware ESXi 管理程式的流程的一部分。
+
+.步驟
+. 使用系統管理員帳戶透過 SSH 登入 Deploy 實用程式 CLI。
+. 將節點移至離線狀態：
++
+[source, cli]
+----
+node stop --cluster-name <cluster_name> --node-name <node_name>
+----
+. 使用 VMware 提供的程序，將執行 ONTAP Select 的 Hypervisor 主機升級至 ESXi 8.0 或更新版本。
+. 將節點移至線上狀態：
++
+[source, cli]
+----
+node start --cluster-name <cluster_name> --node-name <node_name>
+----
+. 節點啟動後，請驗證叢集是否正常運作。
++
+範例：
+
++
+....
+ESX-1N::> cluster show
+Node           Health  Eligibility
+-------------- ------- ------------
+sdot-d200-011d true    true
+....
+
+
+.完成後
+您應該使用 Deploy 管理公用程式執行叢集重新整理作業。
+
+
+
+[[upgrade-a-multi-node-cluster-using-deploy]]
+== 使用 Deploy 升級多節點叢集
+
+您可以使用 Deploy 管理公用程式作為升級託管 ONTAP Select 多節點叢集的 VMware ESXi Hypervisor 的流程的一部分。
+
+.關於此任務
+您必須對叢集中的每個節點逐一執行此升級程序。如果叢集包含四個或更多節點，則應先依序升級每個 HA 配對中的節點，然後再繼續升級下一個 HA 配對。
+
+.步驟
+. 使用系統管理員帳戶透過 SSH 登入 Deploy 實用程式 CLI。
+. 將節點移至離線狀態：
++
+[source, cli]
+----
+node stop --cluster-name <cluster_name> --node-name <node_name>
+----
+. 使用 VMware 提供的程序，將執行 ONTAP Select 的 Hypervisor 主機升級至 ESXi 8.0 或更新版本。
++
+如需詳細資訊、請參閱準備升級 VMware ESXi。
+
+. 將節點移至線上狀態：
++
+[source, cli]
+----
+node start --cluster-name <cluster_name> --node-name <node_name>
+----
+. 節點啟動後，請確認儲存容錯移轉已啟用且叢集運作正常。
++
+.顯示範例
+[%collapsible]
+====
+[listing]
+----
+ESX-2N_I2_N11N12::> storage failover show
+Takeover
+Node Partner Possible State Description
+-------------- -------------- -------- ---------------------------
+sdot-d200-011d sdot-d200-012d true Connected to sdot-d200-012d
+sdot-d200-012d sdot-d200-011d true Connected to sdot-d200-011d
+2 entries were displayed.
+ESX-2N_I2_N11N12::> cluster show
+Node Health Eligibility
+--------------------- ------- ------------
+sdot-d200-011d true true
+sdot-d200-012d true true
+2 entries were displayed.
+----
+====
+
+
+.完成後
+您必須對 ONTAP Select 叢集中使用的每個主機執行升級程序。所有 ESXi 主機升級完成後、您應該使用 Deploy 管理公用程式執行叢集重新整理作業。
+
+
+
+[[upgrade-a-single-node-cluster-without-deploy]]
+== 在不使用 Deploy 的情況下升級單節點叢集
+
+您可以升級託管 ONTAP Select 單節點叢集的 VMware ESXi Hypervisor，而無需使用 Deploy 管理公用程式。
+
+.步驟
+. 登入 ONTAP 命令列介面並停止節點。
+. 使用 VMware vSphere,確認 ONTAP Select 虛擬機器已關閉電源。
+. 使用 VMware 提供的程序，將執行 ONTAP Select 的 Hypervisor 主機升級至 ESXi 8.0 或更新版本。
++
+如需詳細資訊、請參閱準備升級 VMware ESXi。
+
+. 使用 VMware vSphere，存取 vCenter 並執行以下操作：
++
+.. 為 ONTAP Select 虛擬機器新增軟碟機。
+.. 啟動 ONTAP Select 虛擬機器。
+.. 使用系統管理員帳戶透過 SSH 登入 ONTAP CLI。
+
+
+. 節點啟動後，請驗證叢集是否正常運作。
++
+範例：
+
++
+....
+ESX-1N::> cluster show
+Node           Health  Eligibility
+-------------- ------- ------------
+sdot-d200-011d true    true
+....
+
+
+.完成後
+您應該使用 Deploy 管理公用程式執行叢集重新整理作業。
+
+
+
+[[upgrade-a-multi-node-cluster-without-deploy]]
+== 在不使用 Deploy 的情況下升級多節點叢集
+
+您可以升級託管 ONTAP Select 多節點叢集的 VMware ESXi Hypervisor，而無需使用 Deploy 管理公用程式。
+
+.關於此任務
+您必須對叢集中的每個節點逐一執行此升級程序。如果叢集包含四個或更多節點，則應先依序升級每個 HA 配對中的節點，然後再繼續升級下一個 HA 配對。
+
+.步驟
+. 登入 ONTAP 命令列介面並停止節點。
+. 使用 VMware vSphere,確認 ONTAP Select 虛擬機器已關閉電源。
+. 使用 VMware 提供的程序，將執行 ONTAP Select 的 Hypervisor 主機升級至 ESXi 8.0 或更新版本。
+. 使用 VMware vSphere，存取 vCenter 並執行以下操作：
++
+.. 為 ONTAP Select 虛擬機器新增軟碟機。
+.. 啟動 ONTAP Select 虛擬機器。
+.. 使用系統管理員帳戶透過 SSH 登入 ONTAP CLI。
+
+
+. 節點啟動後，請確認儲存容錯移轉已啟用且叢集運作正常。
++
+.顯示範例
+[%collapsible]
+====
+[listing]
+----
+ESX-2N_I2_N11N12::> storage failover show
+Takeover
+Node Partner Possible State Description
+-------------- -------------- -------- ---------------------------
+sdot-d200-011d sdot-d200-012d true Connected to sdot-d200-012d
+sdot-d200-012d sdot-d200-011d true Connected to sdot-d200-011d
+2 entries were displayed.
+ESX-2N_I2_N11N12::> cluster show
+Node Health Eligibility
+--------------------- ------- ------------
+sdot-d200-011d true true
+sdot-d200-012d true true
+2 entries were displayed.
+----
+====
+
+
+.完成後
+您必須對 ONTAP Select 叢集中使用的每個主機執行升級程序。

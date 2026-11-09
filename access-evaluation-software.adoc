@@ -1,0 +1,100 @@
+---
+sidebar: sidebar 
+permalink: access-evaluation-software.html 
+keywords: ontap select, evaluation, software, register, download, access 
+summary: 請求存取以下載 ONTAP Select 評估軟體。 
+---
+= 存取 ONTAP Select 評估軟體
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+如果您是 ONTAP Select 的現有客戶並且擁有有效的授權，或者您是 NetApp 合作夥伴並且想要下載新的 Capacity Tiers 評估授權，則可以存取 link:https://mysupport.netapp.com/site/downloads/evaluation/ontap-select["ONTAP Select 評估軟體"^]。
+
+如果您不屬於以上任何一種情況，並且想要試用 ONTAP Select 進行評估，您可以按照以下步驟要求存取權限以下載評估軟體。
+
+.關於此任務
+* 本說明適用於與 NetApp 有業務往來的 NetApp 銷售人員、合作夥伴及潛在客戶。
+* ONTAP Select Capacity Tiers 評估授權的有效期限為自安裝日起 90 天。
++
+
+NOTE: 您無法延長評估授權。在 90 天結束時，授權將不再運作，您將無法存取相關資料。
+
+* 評估軟體包含下載 ONTAP Select Deploy 管理公用程式和部署叢集所需的所有資訊。
+
+
+
+
+[[step-1-register-for-an-account]]
+== 步驟 1：註冊帳戶
+
+如有需要，完成 NetApp 帳戶註冊並申請潛在客戶存取。
+
+.步驟
+. 建立新帳戶或登出現有帳戶。
++
+[role="tabbed-block"]
+====
+.建立新帳戶
+--
+使用您的企業電子郵件在 link:https://mysupport.netapp.com/site/user/registration["NetApp 支援網站"^] 上註冊帳戶。
+
+
+NOTE: 免費電子郵件帳戶 (例如 gmail 或 yahoo) 不被接受。
+
+請確保您沒有使用新建立的帳戶登入。
+
+--
+.現有帳戶
+--
+如果您已有帳戶，請前往 link:https://mysupport.netapp.com/site/["NetApp 支援網站"^] 並確保您未登入。
+
+--
+====
+. 建立非技術支援案例，以提高存取等級至「prospect」。
++
+.. 選擇 *CASES* 選項卡，然後選擇 *Create non-technical cases*
+.. 選擇 *User Registration Issue* 作為意見回饋類別。
+.. 選擇 *Create case* 。
++
+填寫所有必填資訊，並在意見區段中寫下：「我的企業電子郵件地址是 <your-email-address>。我想取得潛在客戶存取權限，以下載 ONTAP Select 評估軟體。」
+
++
+請填寫您的 NetApp 聯絡人姓名。
+
+.. 選擇 *Submit* 。
+
+
+
+
+
+
+[[step-2-download-ontap-select-evaluation-software]]
+== 步驟 2：下載 ONTAP Select 評估軟體
+
+您的支援案例經審核批准後，NetApp 支援團隊會透過您提供的電子郵件地址通知您。
+
+.步驟
+. https://mysupport.netapp.com/site/downloads/evaluation/ontap-select["下載 ONTAP Select 評估軟體"^]。
++
+評估授權檔案位於 zip 檔案中。
+
+. 為了符合法律要求，您需要link:https://mysupport.netapp.com/site/help["開啟支援案例"^]才能取得存取權。這有助於 NetApp 維護正確的控制和文件記錄，同時為您提供所需的可用於正式作業環境的軟體。
++
+
+NOTE: NetApp 提供「生產就緒」的 ONTAP Select 版本，該版本並非開源或替代版本。只有升級到生產授權才能獲得支援。
+
+
+
+.接下來呢？
+評估軟體下載完成後、請依照指示下載 ONTAP Select Deploy 管理公用程式並部署叢集。
+
+.相關資訊
+* link:concept_lic_evaluation.html["了解 ONTAP Select 部署的評估授權"]
+* link:task_adm_licenses.html#convert-license["將評估授權轉換為正式授權"]
+

@@ -1,0 +1,45 @@
+---
+indexpage:
+  title: ONTAP Select 說明文件
+  lead: NetApp ONTAP Select 是一款軟體定義的儲存設備，您可以在執行 VMware ESXi 或 Kernel-based Virtual
+    Machine（KVM）虛擬機管理程式的各種通用硬體伺服器上部署。它提供您建立靈活且可擴展私有雲基礎架構所需的敏捷性。本網站包含 ONTAP Select
+    9.19.1 的文件。
+  tiles:
+  - title: 開始使用
+    links:
+    - title: 版本資訊
+      url: https://library.netapp.com/ecm/ecm_download_file/ECMLP3378465
+    - title: 新增功能
+      url: "/reference_new_ots.html"
+    - title: 了解 ONTAP Select
+      url: "/concept_ots_overview.html"
+    - title: 授權
+      url: "/concept_lic_evaluation.html"
+    - title: 試試 ONTAP Select
+      url: "/access-evaluation-software.html"
+    - title: 常見問題
+      url: "/reference_faq.html"
+  - title: 安裝和管理
+    links:
+    - title: 規劃您的部署
+      url: "/concept_workflow_deploy.html"
+    - title: 安裝
+      url: "/task_install_deploy.html"
+    - title: 管理叢集
+      url: "/concept_adm_before.html"
+    - title: 使用 REST API
+      url: "/concept_api_how_access.html"
+    - title: 部署一個為期 90 天的叢集評估執行個體
+      url: "/deploy-evaluation-ontap-select-ovf-template.html"
+  - title: 更多資源
+    links:
+    - title: ONTAP Select 產品庫
+      url: https://mysupport.netapp.com/documentation/productlibrary/index.html?productID=62293
+    - title: ONTAP 9 文件
+      url: https://docs.netapp.com/us-en/ontap/
+    - title: ONTAP Select 部落格
+      url: https://blog.netapp.com/tag/ontap-select/
+    - title: ONTAP 社群
+      url: https://community.netapp.com/community/categories/ontap
+    - title: 互通性對照表
+      url: https://mysupport.netapp.com/matrix/

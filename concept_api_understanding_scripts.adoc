@@ -1,0 +1,80 @@
+---
+sidebar: sidebar 
+permalink: concept_api_understanding_scripts.html 
+keywords: rest api, deploy rest api, rest, python, python scripts, understanding 
+summary: 範例 Python 指令碼可讓您執行多種不同的工作。在即時 Deploy 執行個體使用這些指令碼之前、您應該先瞭解這些指令碼。 
+---
+= 了解 ONTAP Select Deploy 的 Python 指令碼
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+範例 Python 指令碼可讓您執行多種不同的工作。在即時 Deploy 執行個體使用這些指令碼之前、您應該先瞭解這些指令碼。
+
+
+
+[[common-design-characteristics]]
+== 常見設計特性
+
+這些指令碼的設計具有下列共同特性：
+
+* 在用戶端機器上從命令列介面執行您可以從任何正確設定的用戶端機器執行 Python 指令碼。如需詳細資訊、請參閱 _Before you begin_ 。
+* 接受 CLI 輸入參數每個指令碼都透過 CLI 的輸入參數進行控制。
+* 讀取輸入檔案每個指令碼都會根據其用途讀取輸入檔案。建立或刪除叢集時、您必須提供 JSON 組態檔。新增節點授權時、您必須提供有效的授權檔。
+* 使用通用支援模組通用支援模組 _deploy_requests.py_ 包含一個類別。每個腳本都會匯入並使用它。
+
+
+
+
+[[create-a-cluster]]
+== 建立叢集
+
+您可以使用 cluster.py 指令碼建立 ONTAP Select 叢集。根據 CLI 參數和 JSON 輸入檔案的內容、您可以修改指令碼以適應部署環境、如下所示：
+
+* Hypervisor 您可以部署至 ESXi 或 KVM（取決於 Deploy 版本）。部署至 ESXi 時,Hypervisor 可由 vCenter 管理,也可以是獨立主機。
+* 叢集大小 您可以部署單節點或多節點叢集。
+* 評估或正式作業授權 您可以使用評估或購買的正式作業授權來部署叢集。
+
+
+指令碼的 CLI 輸入參數包括：
+
+* Deploy 伺服器的主機名稱或 IP 位址
+* 管理使用者帳戶的密碼
+* JSON 設定檔案名稱
+* 訊息輸出的詳細資訊旗標
+
+
+
+
+[[add-a-node-license]]
+== 新增節點授權
+
+如果您選擇部署正式作業叢集、則必須使用指令碼 _add_license.py_ 為每個節點新增授權。您可以在部署叢集之前或之後新增授權。
+
+指令碼的 CLI 輸入參數包括：
+
+* Deploy 伺服器的主機名稱或 IP 位址
+* 管理使用者帳戶的密碼
+* 授權檔案的名稱
+* 具有新增授權權限的 ONTAP 使用者名稱
+* ONTAP 使用者的密碼
+
+
+
+
+[[delete-a-cluster]]
+== 刪除叢集
+
+您可以使用腳本 _delete_cluster.py_ 刪除現有的 ONTAP Select 叢集。
+
+指令碼的 CLI 輸入參數包括：
+
+* Deploy 伺服器的主機名稱或 IP 位址
+* 管理使用者帳戶的密碼
+* JSON 設定檔案名稱
+

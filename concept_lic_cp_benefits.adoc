@@ -1,0 +1,40 @@
+---
+sidebar: sidebar 
+permalink: concept_lic_cp_benefits.html 
+keywords: license, licensing, Capacity Pools, benefits 
+summary: 使用 Capacity Pools 授權模式而非 Capacity Tiers 授權模式有幾個優點。 
+---
+= ONTAP Select Capacity Pools 授權的優勢摘要
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+使用 Capacity Pools 授權模式而非 Capacity Tiers 授權模式有幾個優點。
+
+
+
+[[more-efficient-use-of-storage-capacity]]
+== 更有效地利用儲存容量
+
+使用 Capacity Tiers 授權時，您會為每個節點分配固定的儲存容量。任何未使用的空間都無法與其他節點共享，實際上是一種浪費。而使用 Capacity Pools 授權時，每個節點僅根據資料 Aggregate 的大小使用所需的容量。
+
+容量集中在一個中央池中，可以在組織內的多個節點之間共享。
+
+
+
+[[significantly-reduced-administrative-overhead-resulting-in-lower-cost]]
+== 大幅降低管理負擔，進而降低成本
+
+如果您使用 Capacity Tier 授權，則必須為每個節點取得並安裝授權。使用 Capacity Pool 時，每個共享資源池有一個授權。這可以大幅降低管理負擔並降低成本。
+
+
+
+[[improved-usage-metrics]]
+== 改善的使用量指標
+
+Deploy Web 使用者介面提供容量資源池的增強使用資訊。您可以快速判斷容量資源池中使用和可用的儲存容量、哪些節點正在使用資源池的儲存設備，以及叢集正在從哪些資源池分配容量。

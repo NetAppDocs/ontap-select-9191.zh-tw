@@ -1,0 +1,190 @@
+---
+sidebar: sidebar 
+permalink: reference_plan_ots_general.html 
+keywords: plan, planning, general requirements 
+summary: 在規劃 ONTAP Select 部署時，您應該考慮以下幾個一般性要求。 
+---
+= ONTAP Select 要求和規劃注意事項
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+在規劃 ONTAP Select 部署時，您應該考慮以下幾個一般性要求。
+
+
+
+[[required-linux-knowledge-and-skills-for-kvm]]
+== KVM 所需的 Linux 知識與技能
+
+使用 KVM 虛擬機器管理程式的 Linux 環境較為複雜。在 KVM 上部署 ONTAP Select 之前，您必須具備必要的知識和技能。
+
+Linux 伺服器發行版:: 您應該具備使用 ONTAP Select 部署所用特定 Linux 發行版的經驗。具體來說，您應該能夠執行下列任務：
++
+--
+* 安裝 Linux 發行版
+* 使用 CLI 設定系統
+* 新增軟體套件及其所有相依性
+
+
+--
+
+
+有關準備 Linux 伺服器的更多資訊，包括所需的組態和軟體套件，請參閱link:kvm-host-configuration-and-preparation-checklist.html["主機組態檢查清單"]。請參閱目前支援的 Linux 發行版的 Hypervisor 需求。
+
+KVM 部署與管理:: 您應該熟悉基本的虛擬化概念。此外，在 KVM 環境中安裝和管理 ONTAP Select 時，您必須使用下列幾個 Linux CLI 命令：
++
+--
+* `virt-install`
+* `virsh`
+* `lsblk`
+* `lvs`
+* `vgs`
+* `pvs`
+
+
+--
+網路和 Open vSwitch 組態:: 您應該熟悉連網概念和網路交換器的組態。此外、您應該有使用 Open vSwitch 的經驗。在 KVM 環境中設定 ONTAP Select 網路時、您必須使用下列網路命令：
++
+--
+* `ovs-vsctl`
+* `ip`
+* `ip link`
+* `systemctl`
+
+
+--
+
+
+
+
+[[cluster-size-and-related-considerations]]
+== 叢集大小及相關考量
+
+您應該考慮與叢集大小相關的幾個規劃問題。
+
+叢集中的節點數量:: ONTAP Select 叢集由一個、兩個、四個、六個、八個、十個或十二個節點組成。您應該根據應用程式的需求來確定叢集的大小。例如，如果企業部署需要 HA 功能，則應使用多節點叢集。
+專用與共置:: 根據應用程式類型，您應該確定部署採用專用模式還是共置模式。請注意，由於工作負載的多樣性和更緊密的整合，共置模式可能更為複雜。
+
+
+
+
+[[hypervisor-host-considerations]]
+== Hypervisor 主機考量事項
+
+您應該考慮與 hypervisor 主機相關的幾個規劃問題。
+
+
+CAUTION: 除非獲得 NetApp 技術支援人員的指示，否則您不應直接修改 ONTAP Select 虛擬機的組態。虛擬機器只能透過 Deploy 管理公用程式進行設定和修改。未經 NetApp 技術支援人員協助，在 Deploy 公用程式之外對 ONTAP Select 虛擬機器進行變更可能會導致虛擬機器故障並使其無法使用。
+
+獨立於 Hypervisor:: ONTAP Select 和 ONTAP Select Deploy 管理公用程式皆與 Hypervisor 無關。以下 Hypervisor 同時受兩者支援。
++
+--
+* VMware ESXi
+* 基於核心的虛擬機器 (KVM)
+
+
+--
+
+
+
+NOTE: 從 ONTAP Select 9.14.1 開始，已復原對 KVM 虛擬機器管理程式的支援。先前，ONTAP Select 9.10.1 移除了在 KVM Hypervisor 上部署新叢集的支援，而 ONTAP Select 9.11.1 則移除了對現有 KVM 叢集和主機的管理支援（離線或刪除除外）。
+
+有關支援平台的其他詳細資訊，請參閱特定虛擬機器管理程序的規劃資訊和 link:reference_release_notes.html["發行說明"]。
+
+ONTAP Select 節點的 Hypervisor 和管理公用程式:: Deploy 管理實用程式和 ONTAP Select 節點均以虛擬機器形式運作。您為 Deploy 公用程式所選擇的 Hypervisor 與為 ONTAP Select 節點所選的 Hypervisor 相互獨立。在配對這兩者時，您擁有完全的靈活度：
++
+--
+* 在 VMware ESXi 上執行的部署公用程式可以在 VMware ESXi 或 KVM 上建立和管理 ONTAP Select 叢集
+* 在 KVM 上執行的部署公用程式可以在 VMware ESXi 或 KVM 上建立和管理 ONTAP Select 叢集
+
+
+--
+每個主機有一個或多個 ONTAP Select 節點執行個體:: 每個 ONTAP Select 節點都作為獨立的虛擬機器運作。您可以在同一台 Hypervisor 主機上建立多個節點，但需遵守下列限制：
++
+--
+* 來自單一 ONTAP Select 叢集的多個節點無法在同一台主機上執行。特定主機上的所有節點都必須來自不同的 ONTAP Select 叢集。
+* 您必須使用外部儲存設備。
+* 如果使用軟體 RAID，則只能在主機上部署一個 ONTAP Select 節點。
+
+
+--
+叢集內節點的 Hypervisor 一致性:: ONTAP Select 叢集中的所有主機必須執行相同版本和發行版的 Hypervisor 軟體。
+每台主機上的實體連接埠數量:: 您必須將每台主機設定為使用一個、兩個或四個實體連接埠。雖然在設定網路連接埠時具有彈性，但應盡可能遵循以下建議：
++
+--
+* 單節點叢集中的主機應該有兩個實體連接埠。
+* 多節點叢集中的每個主機都應該有四個實體連接埠
+
+
+--
+將 ONTAP Select 與 ONTAP 硬體型叢集整合:: 您無法直接將 ONTAP Select 節點新增至基於硬體的 ONTAP 叢集。但是、您可以選擇在 ONTAP Select 叢集和基於硬體的 ONTAP 叢集之間建立叢集對等關係。
+
+
+
+
+[[storage-considerations]]
+== 儲存考量
+
+您應該考慮與主機儲存相關的幾個規劃問題。
+
+RAID 類型:: 在 ESXi 上使用直連儲存（DAS）時，您應該決定要使用本機硬體 RAID 控制器或 ONTAP Select 隨附的軟體 RAID 功能。如果您使用軟體 RAID，請參閱link:reference_plan_ots_storage.html["儲存設備和 RAID 注意事項"]以了解更多資訊。
+本機儲存設備:: 使用 RAID 控制器管理的本機儲存設備時、您必須決定下列事項：
++
+--
+* 是否使用一個或多個 RAID 群組
+* 是否使用一個或多個 LUN
+
+
+--
+外部儲存設備:: 使用 ONTAP Select vNAS 解決方案時、您必須確定遠端資料儲存區的位置以及存取方式。ONTAP Select vNAS 支援以下組態：
++
+--
+* VMware vSAN
+* 通用外部儲存陣列
+
+
+--
+所需儲存空間的估算:: 您需要確定 ONTAP Select 節點所需的儲存空間。此資訊是購買包含儲存容量的授權所必需的。如需詳細資訊、請參閱儲存容量限制。
+
+
+
+NOTE: ONTAP Select 儲存容量對應於連接到 ONTAP Select 虛擬機器的資料磁碟的總允許大小。
+
+正式作業部署的授權模式:: 您必須為部署在正式作業環境中的每個 ONTAP Select 叢集選擇 Capacity Tiers 或 Capacity Pools 授權模式。如需詳細資訊、請參閱 _License_ 一節。
+
+
+
+
+[[authentication-using-the-credential-store]]
+== 使用認證存放區進行驗證
+
+ONTAP Select Deploy 憑證儲存庫是一個保存帳戶資訊的資料庫。Deploy 使用帳戶認證資料來執行主機驗證，作為叢集建立和管理的一部分。在規劃 ONTAP Select 部署時，您應該感知認證資料儲存區的使用方式。
+
+
+NOTE: 帳戶資訊使用進階加密標準（AES）加密演算法和 SHA-256 雜湊演算法安全地儲存在資料庫中。
+
+憑證類型:: 支援下列類型的認證資料：
++
+--
+* 主機
++
+*主機*認證資料用於在將 ONTAP Select 節點直接部署到 ESXi 或 KVM 時驗證 Hypervisor 主機。
+
+* vCenter
++
+當主機由 VMware vCenter 管理時，在將 ONTAP Select 節點部署到 ESXi 的過程中，使用 *vcenter* 憑證來驗證 vCenter 伺服器身分。
+
+
+
+--
+存取:: 在執行 Deploy 的常規管理任務（例如新增 hypervisor 主機）時，內部會存取憑證儲存。您也可以直接透過 Deploy Web 使用者介面和 CLI 管理憑證儲存。
+
+
+.相關資訊
+* link:reference_plan_ots_storage.html["儲存設備和 RAID 注意事項"]
+

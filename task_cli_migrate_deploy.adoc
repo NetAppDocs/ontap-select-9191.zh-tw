@@ -1,0 +1,122 @@
+---
+sidebar: sidebar 
+permalink: task_cli_migrate_deploy.html 
+keywords: administer, administering, cli, deploy, deploy instance, migrate 
+summary: 您可以使用命令列介面，將現有的 Deploy 管理公用程式執行個體移轉至新的虛擬機器。 
+---
+= 將 ONTAP Select Deploy 執行個體移轉至新的虛擬機器
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+您可以使用命令列介面，將現有的 Deploy 管理公用程式執行個體移轉至新的虛擬機器。
+
+此程序是根據建立新的虛擬機器、使用原始虛擬機器的組態資料而定。新的和原始的虛擬機器必須執行相同版本和版本的 Deploy 公用程式。您無法移轉至不同版本和版本的 Deploy 公用程式。
+
+
+
+[[step-1back-up-the-deploy-configuration-data]]
+== 步驟 1：備份 Deploy 組態資料
+
+您必須在遷移虛擬機器時建立 Deploy 組態資料的備份。您也應該在部署 ONTAP Select 叢集後建立備份。資料會儲存至單一加密檔案，您可以將其下載到本機工作站。
+
+.開始之前
+* 確保 Deploy 在備份作業期間沒有執行任何其他任務。
+* 儲存原始的 Deploy 虛擬機器映像。
++
+
+CAUTION: 稍後在將 Deploy 設定資料從原始虛擬機器還原到新虛擬機器時，需要使用原始 Deploy 虛擬機器映像。
+
+
+
+.關於此任務
+您建立的備份檔案會擷取虛擬機器的所有組態資料。這些資料描述了部署環境的各個方面，包括 ONTAP Select 叢集。
+
+.步驟
+. 使用系統管理員帳戶透過 SSH 登入 Deploy 實用程式 CLI。
+. 建立 Deploy 組態資料的備份，該資料儲存在 Deploy 伺服器的內部目錄中：
++
+[source, cli]
+----
+deploy backup create
+----
+. 出現提示時，請提供備份密碼。
++
+備份檔案已根據密碼加密。
+
+. 顯示系統中可用的備份：
++
+[source, cli]
+----
+deploy backup show -detailed
+----
+. 根據 *Created* 欄位中的日期選擇備份檔案，並記錄 *Download URL* 值。
++
+您可以透過 URL 存取備份檔案。
+
+. 使用網頁瀏覽器或 Curl 等公用程式，透過 URL 將備份檔案下載到本機工作站。
+
+
+
+
+[[step-2-install-a-new-instance-of-the-deploy-virtual-machine]]
+== 步驟 2：安裝 Deploy 虛擬機器的新執行個體
+
+您必須建立一個新的 Deploy 虛擬機器執行個體，然後可以使用原始虛擬機器中的組態資料對其進行更新。
+
+.開始之前
+您必須熟悉在 VMware 環境中下載和部署 ONTAP Select Deploy 虛擬機器的步驟。
+
+.關於此任務
+此工作以高階層級說明。
+
+.步驟
+. 建立新的 Deploy 虛擬機器執行個體：
++
+.. 下載虛擬機器映像。
+.. 部署虛擬機器並配置網路介面。
+.. 使用 SSH 存取 Deploy 公用程式。
+
+
+
+
+.相關資訊
+link:task_install_deploy.html["安裝 ONTAP Select Deploy"]
+
+
+
+[[step-3-restore-the-deploy-configuration-data-to-the-new-virtual-machine]]
+== 步驟 3：將 Deploy 組態資料還原至新的虛擬機器
+
+您必須將原始 Deploy 公用程式虛擬機器中的組態資料還原到新的虛擬機器。資料位於單一檔案中，您必須從本機工作站上傳該檔案。
+
+.開始之前
+您必須擁有先前備份中的組態資料。資料包含在單一檔案中，且必須可在本機工作站上使用。
+
+.步驟
+. 在本機工作站的命令 shell 中，使用 sftp 公用程式將備份檔案上傳到 Deploy 虛擬機器，如下列範例所示：
++
+....
+sftp admin@10.234.81.101 (provide password when prompted)
+put deploy_backup_20190601162151.tar.gz
+exit
+....
+. 使用系統管理員帳戶透過 SSH 登入 Deploy 實用程式 CLI。
+. 還原組態資料：
++
+[source, cli]
+----
+deploy backup restore -path <path_name> -filename <file_name>
+----
++
+範例命令：
+
++
+`deploy backup restore -path /home/admin -filename deploy_backup_20180601162151.tar.gz`
+
+

@@ -1,0 +1,78 @@
+---
+sidebar: sidebar 
+permalink: concept_api_operation.html 
+keywords: rest api, deploy rest api, rest, operation, basic operation 
+summary: 雖然 REST 建立了一套通用的技術和最佳實務做法，但每個 API 的具體細節會因設計選擇而異。在使用 ONTAP Select Deploy API 之前，您應該了解其詳細資訊和操作特性。 
+---
+= ONTAP Select Deploy API 基本操作特性
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+雖然 REST 建立了一套通用的技術和最佳實務做法，但每個 API 的具體細節會因設計選擇而異。在使用 ONTAP Select Deploy API 之前，您應該了解其詳細資訊和操作特性。
+
+
+
+[[hypervisor-host-versus-ontap-select-node]]
+== Hypervisor 主機與 ONTAP Select 節點
+
+_hypervisor host_ 是承載 ONTAP Select 虛擬機器的核心硬體平台。當 ONTAP Select 虛擬機器部署並在 hypervisor host 上作用中時，此虛擬機器被視為 _ONTAP Select 節點_。在 Deploy REST API 版本 3 中，主機和節點物件是分離且不同的。這允許一對多的關係，即一個或多個 ONTAP Select 節點可以在同一個 hypervisor host 上執行。
+
+
+
+[[object-identifiers]]
+== 物件識別碼
+
+每個資源執行個體或物件在建立時都會被指派一個唯一識別碼。這些識別碼在 ONTAP Select Deploy 的特定執行個體中是全域唯一的。發出建立新物件執行個體的 API 呼叫後,相關的 ID 值會在 HTTP 回應的 `location` 標頭中傳回給呼叫方。您可以擷取該識別碼,並在後續呼叫中參照該資源執行個體時使用它。
+
+
+NOTE: 物件識別碼的內容和內部結構可能隨時變更。在引用關聯物件時，您應該僅在需要時在對應的 API 呼叫中使用這些識別碼。
+
+
+
+[[request-identifiers]]
+== 請求識別碼
+
+每個成功的 API 請求都會被指派一個唯一的識別碼。該識別碼會在相關聯的 HTTP 回應的 `request-id`標頭中傳回。您可以使用請求識別碼來統稱單一特定 API 請求-回應交易的活動。例如、您可以根據請求 ID 擷取交易的所有事件訊息。
+
+
+
+[[synchronous-and-asynchronous-calls]]
+== 同步和非同步呼叫
+
+伺服器處理從客戶端收到的 HTTP 請求主要有兩種方式：
+
+* 同步伺服器會立即執行要求，並以狀態碼 200、201 或 204 回應。
+* 非同步處理：伺服器接受請求並傳回狀態碼 202。這表示伺服器已接受客戶端請求，並啟動後台任務以完成該請求。最終的成功或失敗結果不會立即顯示，必須透過額外的 API 呼叫來確定。
+
+
+
+
+[[confirm-the-completion-of-a-long-running-job]]
+== 確認長時間執行工作的完成
+
+通常，任何耗時較長的操作都會在伺服器端使用後台任務非同步處理。在 Deploy REST API 中，每個後台任務都由一個 Job 物件關聯，該物件追蹤任務並提供諸如當前狀態之類的資訊。後台任務建立後，HTTP 回應會傳回一個包含其唯一識別碼的 Job 物件。
+
+您可以直接查詢 Job 物件，以判斷相關 API 呼叫是否成功。如需其他資訊，請參閱_使用 Job 物件進行非同步處理_。
+
+除了使用 Job 物件之外，還有其他方法可以判斷要求是否成功或失敗，包括：
+
+* 事件訊息您可以使用原始回應中傳回的請求 ID 來擷取與特定 API 呼叫關聯的所有事件訊息。事件訊息通常包含成功或失敗的指示，在偵錯錯誤情況時也很有用。
+* 資源狀態或狀態 許多資源都維護一個狀態或狀態值、您可以查詢該值以間接確定請求是否成功或失敗。
+
+
+
+
+[[security]]
+== 安全性
+
+Deploy API 使用以下安全技術：
+
+* 傳輸層安全性協定 (TLS) Deploy 伺服器和用戶端之間透過網路傳輸的所有流量均透過 TLS 加密。不支援透過未加密通道使用 HTTP 協定。支援 TLS 1.2 版。
+* HTTP 驗證基本驗證用於每個 API 交易。每個請求都會新增一個 HTTP 標頭，其中包含 base64 字串中的使用者名稱和密碼。
+

@@ -1,0 +1,53 @@
+---
+sidebar: sidebar 
+permalink: concept-data-protection-and-efficiency.html 
+keywords: ontap select, metrocluster software defined storage, mc sds storage 
+summary: ONTAP Select MetroCluster SDS 提供增強的保護和經濟高效的實施方案。 
+---
+= ONTAP Select 資料保護和效率
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+ONTAP Select 基於 ONTAP 儲存軟體構建，採用高可用度的無共享橫向擴展架構，高效地提供企業儲存設備服務。您可以部署包含 1、2、4、6、8、10 或 12 個節點的解決方案，每個節點最高可提供 400TB 的原始容量，支援 NFS、SMB/CIFS 和 iSCSI 連接的儲存設備。您可以運用原生重複資料刪除和壓縮，透過提高有效容量來降低儲存設備成本。橫向擴展架構可實現高可用度和無中斷的資料存取，從而滿足負載平衡或硬體維護的需求。
+
+
+
+[[snapshot-data-protection]]
+== 快照資料保護
+
+ONTAP Select 包含資料保護功能，包括快照和 SnapMirror 軟體。您可以快速將資料複寫到其他 ONTAP 儲存設備，無論是在內部部署、遠端站台或雲端。如果您必須快速恢復資料、SnapRestore 軟體可以使用本機快照在幾秒鐘內恢復整個檔案系統或資料磁碟區，無論容量或檔案數量為何。
+
+
+
+[[metrocluster-software-defined-storage]]
+== MetroCluster 軟體定義儲存
+
+ONTAP Select MetroCluster 軟體定義儲存（SDS）提供增強的保護和經濟高效的實施方案。
+
+如果滿足某些最低要求，雙節點叢集可以跨越兩個位置。這種架構巧妙地介於硬體為基礎的 MetroCluster 和單一資料中心叢集（硬體定義或軟體定義）之間。ONTAP Select MetroCluster SDS 的要求突顯了軟體定義儲存解決方案的通用靈活性，以及它與硬體為基礎的 MetroCluster SDS 之間的差異。無需任何專用硬體。
+
+與MetroCluster不同，ONTAP Select 利用現有網路基礎架構，支援高達 5 毫秒 RTT 的網路延遲和高達 5 毫秒的抖動，總延遲最高為 10 毫秒。市場上的分離要求更多地與物理分離而非實際距離相關。在某些情況下，這可能意味著不同的建築物。在其他情況下，這可能意味著同一建築物內的不同房間。無論實際的實體位置為何，將雙節點叢集定義為MetroCluster SDS 的關鍵在於每個節點都使用獨立的上行鏈路交換器。
+
+作為雙節點 HA 組態的一部分，需要一個中介節點來在容錯移轉期間正確識別作用中節點，並避免網路分割期間兩個節點各自保持獨立作用中狀態的腦裂情況。此操作與先前提供的常規雙節點 HA 組態相同。為了在站台故障期間實現適當的保護和容錯移轉，中介節點應位於與兩個 HA 節點不同的站台。中介節點與每個 ONTAP Select 節點之間的最大延遲不得超過 125 毫秒。
+
+ONTAP Select MetroCluster SDS 提供以下優勢：
+
+* MetroCluster SDS 為 ONTAP Select 提供了另一個維度（資料中心到資料中心）的保護。現在，除了充分利用軟體定義儲存和 ONTAP 的所有優勢之外，您還可以利用這種額外的保護等級。
+* MetroCluster SDS 提供業務關鍵型資料保護，實現 0 RPO 和自動故障轉移。資料儲存和應用程式存取點都會自動切換到正常運作的資料中心或節點，無需 IT 人員幹預。
+* MetroCluster SDS 具有成本效益。它利用現有的網路基礎架構，在 HA 配對之間實現延伸恢復能力，無需額外的硬體。此外，它還在同一叢集中提供主動 / 主動資料存取和資料中心備援。
+
+
+*MetroCluster SDS*
+
+image:MCSDS_01.jpg["建置在 DAS 上的私有雲"]
+
+如需更多最佳實務做法和其他要求、請參閱 link:concept_ha_config.html#two-node-ha-versus-multi-node-ha["雙節點 HA 與多節點 HA"] 和 link:reference_plan_best_practices.html#two-node-stretched-ha-metrocluster-sds-best-practices["雙節點延伸 HA（MetroCluster SDS）最佳實務做法"] 章節。
+
+.相關資訊
+link:reference_lic_ontap_features.html["ONTAP Select 對 ONTAP 功能的支援"]

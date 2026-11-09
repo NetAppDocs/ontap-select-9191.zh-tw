@@ -1,0 +1,100 @@
+---
+sidebar: sidebar 
+permalink: concept_lic_cp_operation.html 
+keywords: license, licensing, Capacity Pools, operation details 
+summary: Capacity Pools 授權模式與 Capacity Tiers 模式不同。Capacity Pools 模式不是為每個節點分配獨立的儲存容量，而是將儲存容量分配到一個容量池中，供多個節點共用。為了支援 Capacity Pools 模式，我們創建了額外的元件和流程。 
+---
+= ONTAP Select 容量資源池授權模式的操作詳細資料
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+Capacity Pools 授權模式與 Capacity Tiers 模式不同。Capacity Pools 模式不是為每個節點分配獨立的儲存容量，而是將儲存容量分配到一個容量池中，供多個節點共用。為了支援 Capacity Pools 模式，我們創建了額外的元件和流程。
+
+
+
+[[license-manager]]
+== 授權管理程式
+
+授權管理程式會在 Deploy 管理公用程式的每個執行個體中以個別程序的形式執行。LM 提供的部分功能包括：
+
+* 根據 Capacity Pool 授權序號，為每個節點產生一個唯一的二十位數序號
+* 根據 ONTAP Select 節點的要求，從共用容量資源池建立容量租約
+* 透過 Deploy 使用者介面報告資源池使用資訊
+
+
+
+
+[[lease-characteristics]]
+== 租賃特性
+
+使用 Capacity Pool 授權的節點上分配給每個資料 Aggregate 的儲存空間必須關聯一個租約。節點請求儲存租約，如果容量可用，License Manager 將回應一個租約。每個租約都具有以下明確或隱含屬性：
+
+* 授權管理程式
++
+每個 ONTAP Select 節點都與一個 License Manager 實例關聯
+
+* 容量池
++
+每個 ONTAP Select 節點都與一個容量池關聯
+
+* 儲存分配
++
+租賃合約中會指定一個具體的容量值
+
+* 到期日期和時間
++
+租約期限為一小時至七天，視使用者配置而定。
+
+
+
+
+
+[[license-lock-id]]
+== 授權鎖定 ID
+
+每個 License Manager 執行個體（以及對應的每個 Deploy 公用程式執行個體）都由一個唯一的 128 位元編號標識。此編號與九位數的 Capacity Pool 授權序號結合使用,將資源池鎖定到特定的 License Manager 執行個體（實際上就是一個 Deploy 執行個體）。您必須在 NetApp 支援網站提供這兩個值,作為產生 NetApp 授權檔案（NLF）的一部分。
+
+您可以透過以下方式使用 Web 使用者介面來判斷 Deploy 執行個體的授權鎖定 ID：
+
+* 入門指南頁面
++
+首次登入時，Deploy 會顯示此頁面。您也可以開啟頁面右上角的下拉框，選擇 *Getting Started* 來顯示此頁面。LLID 會顯示在「新增授權」部分。
+
+* 選擇頁面頂部的 *Administration* 選項卡，然後選擇 *Systems & AutoSupport* 。
+
+
+
+
+[[basic-lease-operations]]
+== 基本租賃作業
+
+每次建立、擴充或變更資料聚合時，ONTAP Select 節點都必須尋找或要求有效的容量租約。您可以使用先前請求中仍然有效的租約，也可以根據需要要求新的租約。ONTAP Select 節點找出容量池租約的步驟如下：
+
+. 如果在節點上找到現有租約，只要符合下列所有條件，就會使用該租約：
++
+** 租約尚未到期
+** Aggregate 的儲存要求不超過租賃容量
+
+
+. 如果找不到現有租約，節點會向 License Manager 要求新的租約。
+
+
+
+
+[[return-storage-capacity-to-a-capacity-pool]]
+== 將儲存容量返回容量池
+
+儲存容量會根據需要從容量資源池中分配，每個新請求都可能減少資源池中的可用儲存空間。在以下幾種情況下，儲存容量會被釋放回資源池：
+
+* 資料 Aggregate 的租約到期且節點未續約
+* 資料 Aggregate 已刪除
+
+
+
+NOTE: 如果刪除 ONTAP Select 虛擬機器，所有作用中的租用仍會保持有效，直到到期為止。發生這種情況時，容量會返回資源池。

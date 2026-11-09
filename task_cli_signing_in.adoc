@@ -1,0 +1,35 @@
+---
+sidebar: sidebar 
+permalink: task_cli_signing_in.html 
+keywords: administer, administering, cli, deploy, sign in, signing in 
+summary: 您需要使用 SSH 登入 Deploy 管理 shell。登入後，您可以發出 CLI 命令來建立 ONTAP Select 叢集並執行相關的管理程序。 
+---
+= 使用 SSH 登入 ONTAP Select Deploy
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+您需要使用 SSH 登入 Deploy 管理 shell。登入後，您可以發出 CLI 命令來建立 ONTAP Select 叢集並執行相關的管理程序。
+
+.開始之前
+您必須擁有 Deploy 系統管理員（admin）帳戶的目前密碼。如果您是首次登入，並且使用 vCenter 安裝 Deploy 虛擬機器，則應使用安裝期間設定的密碼。
+
+.步驟
+. 使用 Deploy 虛擬機器的系統管理員帳戶和管理 IP 位址登入；例如：
++
+`ssh admin@<10.235.82.22>`
+
+. 如果您是首次登入，且未透過 vCenter 提供的精靈安裝 Deploy，請在出現提示時提供下列組態資訊：
++
+** 管理員帳戶的新密碼（必填）
+** 公司名稱（必填）
+** Proxy URL（選用）
+
+
+. 輸入 *?* 並選取 *Enter* 以顯示可用管理 shell 命令清單。
+

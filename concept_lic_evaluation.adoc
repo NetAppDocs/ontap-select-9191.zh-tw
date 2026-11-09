@@ -1,0 +1,76 @@
+---
+sidebar: sidebar 
+permalink: concept_lic_evaluation.html 
+keywords: license, licensing, evaluation, upgrade license 
+summary: 如果您想在決定購買之前評估 ONTAP Select，可以使用評估授權。評估授權包含在 ONTAP Select Deploy 管理公用程式中，並在評估部署過程中自動套用於每個 ONTAP Select 節點。 
+---
+= 了解 ONTAP Select 部署的評估授權
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+您可以使用評估授權或購買的授權部署 ONTAP Select。您選擇的授權必須套用於 ONTAP Select 叢集中的每個節點，因此也適用於整個叢集。如果您想在決定購買之前評估 ONTAP Select，可以使用評估授權。評估授權包含在 ONTAP Select Deploy 管理公用程式中，並在評估部署過程中自動套用於每個 ONTAP Select 節點。
+
+[NOTE]
+====
+若要下載 ONTAP Select Deploy 管理公用程式、您需要下列項目：
+
+* 已註冊的 NetApp 支援網站帳戶。如果您還沒有帳戶，請參閱 https://mysupport.netapp.com/site/user/registration["使用者註冊"^]。
+* 適用於具有評估授權的 ONTAP Select 部署 https://mysupport.netapp.com/site/downloads/evaluation/ontap-select["接受終端使用者授權合約"^]。
+
+
+====
+部署和支援評估叢集時需要考慮以下幾個方面：
+
+* 您只能將叢集用於評估目的。您不得在正式作業環境中使用具有評估授權的叢集。
+* 配置每個主機時，應如下使用 ONTAP Select Deploy 管理實用程式：
++
+** 請勿提供序號
+** 設定為使用評估授權
+
+
+
+
+
+
+[[licensing-characteristics]]
+== 授權特性
+
+ONTAP Select 評估授權具有以下特性：
+
+* 不需要具備儲存容量的正式授權
+* 節點序號為二十位數字，由 ONTAP Select Deploy 自動產生。
++
+（您並非直接從 NetApp 取得）
+
+* 授權提供的評估期間最長可達 90 天
+* 每個節點分配的最大儲存空間與正式作業授權相同
+
+
+
+
+[[upgrade-to-a-production-license]]
+== 升級至正式作業授權
+
+您可以將 ONTAP Select 評估叢集升級為使用正式作業授權。您應該注意下列限制：
+
+* 您必須使用 Deploy 管理公用程式來執行授權升級
+* 您可以使用 Capacity Tier 授權，但不支援 Capacity Pools 授權。
+* 每個節點必須分配足夠的儲存空間，以支援生產授權所需的最低需求，具體取決於叢集大小
+
+
+如需詳細資訊，請參閱 link:task_adm_licenses.html["將評估授權轉換為正式授權"]。
+
+.接下來呢？
+* link:access-evaluation-software.html["存取 ONTAP Select 評估軟體"]
+* link:deploy-evaluation-ontap-select-ovf-template.html["部署一個為期 90 天的 ONTAP Select 叢集評估執行個體"]
+
+
+.相關資訊
+* link:concept_lic_production.html["瞭解正式作業部署的授權"]
+

@@ -1,0 +1,339 @@
+---
+sidebar: sidebar 
+permalink: kvm-host-configuration-and-preparation-checklist.html 
+keywords: ontap select, pre-installation checklist, kvm, host preparation 
+summary: 準備部署 ONTAP Select 節點的每台 KVM 管理程式主機。在準備主機時，請仔細評估部署環境，確保主機已正確設定，並準備好支援 ONTAP Select 叢集的部署。 
+---
+= 為 ONTAP Select 準備 KVM 主機
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+準備部署 ONTAP Select 節點的每部 KVM Hypervisor 主機。在準備主機時，請仔細評估部署環境，確保主機配置正確，並已準備好支援 ONTAP Select 叢集的部署。
+
+
+NOTE: ONTAP Select Deploy 管理公用程式不會執行虛擬機器管理程式主機所需的網路和儲存配置。您必須在部署 ONTAP Select 叢集之前手動準備每個主機。
+
+
+
+[[step-1-prepare-the-kvm-hypervisor-host]]
+[[prepare-linux-server]]
+== 步驟 1：準備 KVM Hypervisor 主機
+
+您需要準備部署了 ONTAP Select 節點的每台 Linux KVM 伺服器。您還必須準備部署了 ONTAP Select Deploy 管理公用程式的伺服器。
+
+.步驟
+. 安裝 Red Hat Enterprise Linux（RHEL）。
++
+使用 ISO 映像安裝 RHEL 作業系統。請參閱link:reference_plan_ots_hardware.html#software-compatibility["Hypervisor 的軟體相容性資訊"]以取得支援的 RHEL 版本清單。安裝期間，請依照下列方式設定系統：
+
++
+.. 選擇 Default 作為安全性原則。
+.. 選擇虛擬化主機軟體選項。
+.. 確認目標位置是本機開機磁碟，而不是 ONTAP Select 使用的 RAID LUN。
+.. 系統開機後，請確認主機管理介面是否已啟動。
++
+
+NOTE: 您可以編輯 /etc/sysconfig/network-scripts 下的正確網路組態檔案，然後使用  `ifup` 命令啟動介面。
+
+
+
+. 安裝 ONTAP Select 所需的其他套件。
++
+ONTAP Select 需要幾個額外的軟體套件。確切的套件清單會因您使用的 Linux 版本而異。首先，請確認您的伺服器上是否有 yum 儲存庫。如果沒有，您可以使用  `wget your_repository_location` 命令擷取。
+
++
+
+NOTE: 如果您在安裝 Linux 伺服器時選擇了 Virtualized Host 作為軟體選擇，則某些必需的軟體套件可能已安裝。您可能需要按照 link:https://docs.openvswitch.org/en/latest/intro/install/general/["Open vSwitch 文件"^] 中的說明從原始碼安裝 openvswitch 軟體套件。
+
++
+有關必要套件和其他組態需求的其他資訊，請參閱 link:https://imt.netapp.com/matrix/#welcome["互通性對照表工具"^]。
+
+. 設定 NVMe 磁碟的 PCI 傳遞。
++
+如果您的組態中使用 NVMe 磁碟、則需要設定 PCI 通過（DirectPath IO）、以便 KVM 主機能夠直接存取 ONTAP Select 叢集中本機連接的 NVMe 磁碟。您需要直接存取才能執行以下工作：
+
++
+** link:task_chk_nvme_configure.html["設定 KVM 主機以使用 NVMe 磁碟機"]
+** link:concept_stor_swraid_local.html["部署叢集後使用軟體 RAID"]
+
+
++
+如需如何為 KVM 虛擬機器管理程式設定 PCI 直通（DirectPath IO）的說明，請參閱 link:https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/5/html/virtualization/chap-virtualization-pci_passthrough#sect-Virtualization-PCI_passthrough-AI_device_to_a_host["Red Hat 說明文件"^]。
+
+. 設定儲存資源池。
++
+ONTAP Select 儲存資源池是一個邏輯資料容器，它抽象化了底層實體儲存設備。您必須在部署 ONTAP Select 的 KVM 主機上管理儲存資源池。
+
+
+
+
+
+[[step-2-create-a-storage-pool]]
+== 步驟 2：建立儲存資源池
+
+在每個 ONTAP Select 節點上至少建立一個儲存池。如果使用軟體 RAID 而不是本機硬體 RAID，則根聚合和資料聚合的儲存磁碟會連接到節點。在這種情況下，仍然需要為系統資料建立一個儲存池。
+
+.開始之前
+請確認您可以登入部署了 ONTAP Select 的主機上的 Linux CLI。
+
+.關於此任務
+ONTAP Select Deploy 管理公用程式要求將儲存資源池的目標位置指定為 `/dev/<pool_name>`，其中 `<pool_name>`是主機上的唯一資源池名稱。
+
+
+NOTE: 建立儲存池時，會配置 LUN 的整個容量。
+
+.步驟
+. 顯示 Linux 主機上的本機裝置，並選擇將包含儲存資源池的 LUN：
++
+[source, cli]
+----
+lsblk
+----
++
+適當的 LUN 可能是儲存容量最大的裝置。
+
+. 在裝置上定義儲存資源池：
++
+[source, cli]
+----
+virsh pool-define-as <pool_name> logical --source-dev <device_name> --target=/dev/<pool_name>
+----
++
+例如：
+
++
+[listing]
+----
+virsh pool-define-as select_pool logical --source-dev /dev/sdb --target=/dev/select_pool
+----
+. 建置儲存資源池：
++
+[source, cli]
+----
+virsh pool-build <pool_name>
+----
+. 啟動儲存資源池：
++
+[source, cli]
+----
+virsh pool-start <pool_name>
+----
+. 設定儲存資源池在系統開機時自動啟動：
++
+[source, cli]
+----
+virsh pool-autostart <pool_name>
+----
+. 確認儲存資源池已建立：
++
+[source, cli]
+----
+virsh pool-list
+----
+
+
+
+
+[[step-3-optionally-delete-a-storage-pool]]
+== 步驟 3：（選用）刪除儲存資源池
+
+當不再需要儲存資源池時，您可以將其刪除。
+
+.開始之前
+請確認您可以登入部署了 ONTAP Select 的 Linux CLI。
+
+.關於此任務
+ONTAP Select Deploy 管理公用程式要求將儲存資源池的目標位置指定為 `/dev/<pool_name>`，其中 `<pool_name>`是主機上的唯一資源池名稱。
+
+.步驟
+. 確認儲存資源池已定義：
++
+[source, cli]
+----
+virsh pool-list
+----
+. 銷毀儲存資源池：
++
+[source, cli]
+----
+virsh pool-destroy <pool_name>
+----
+. 取消定義非使用中儲存資源池的組態：
++
+[source, cli]
+----
+virsh pool-undefine <pool_nanme>
+----
+. 確認儲存資源池已從主機移除：
++
+[source, cli]
+----
+virsh pool-list
+----
+. 確認儲存資源池磁碟區群組的所有邏輯磁碟區均已刪除。
++
+.. 顯示邏輯磁碟區：
++
+[source, cli]
+----
+lvs
+----
+.. 如果儲存池存在任何邏輯磁碟區，請將其刪除：
++
+[source, cli]
+----
+lvremove <logical_volume_name>
+----
+
+
+. 確認磁碟區群組已刪除：
++
+.. 顯示 Volume 群組：
++
+[source, cli]
+----
+vgs
+----
+.. 如果該儲存池存在磁碟區群組，請將其刪除：
++
+[source, cli]
+----
+vgremove <volume_group_name>
+----
+
+
+. 確認實體磁碟區已刪除：
++
+.. 顯示實體磁碟區：
++
+[source, cli]
+----
+pvs
+----
+.. 如果儲存池已存在實體磁碟區，則將其刪除：
++
+[source, cli]
+----
+pvremove <physical_volume_name>
+----
+
+
+
+
+
+
+[[step-4-review-the-ontap-select-cluster-configuration]]
+== 步驟 4：檢閱 ONTAP Select 叢集組態
+
+您可以將 ONTAP Select 部署為多節點叢集或單節點叢集。在許多情況下，多節點叢集更佳，因為它提供額外儲存容量和高可用度（HA）功能。
+
+下圖展示了用於 ESXi 主機的單節點叢集和四節點叢集的 ONTAP Select 網路。
+
+[role="tabbed-block"]
+====
+.單節點叢集
+--
+下圖說明單節點叢集。外部網路承載用戶端、管理和跨叢集複寫流量（SnapMirror/SnapVault）。
+
+image:CHK_01.jpg["單節點叢集顯示一個網路"]
+
+--
+.四節點叢集
+--
+下圖展示了一個包含兩個網路的四節點叢集。內部網路支援節點間的通訊，從而為 ONTAP 叢集網路服務提供支援。外部網路承載用戶端、管理和跨叢集複寫流量（SnapMirror/SnapVault）。
+
+image:CHK_02.jpg["顯示兩個網路的四節點叢集"]
+
+--
+.四節點叢集中的單一節點
+--
+下圖展示了四節點叢集中單一 ONTAP Select 虛擬機器的典型網路配置。其中包含兩個分隔的網路：ONTAP 內部網路和 ONTAP 外部網路。
+
+image:CHK_03.jpg["四節點叢集中的單一節點"]
+
+--
+====
+
+
+[[step-5-configure-open-vswitch]]
+== 步驟 5：設定 Open vSwitch
+
+使用 Open vSwitch 在每個 KVM 主機節點上設定軟體定義交換器。
+
+.開始之前
+確認網路管理員已停用，且原生 Linux 網路服務已啟用。
+
+.關於此任務
+ONTAP Select 需要兩個獨立的網路，這兩個網路都利用連接埠綁定來提供網路的高可用性功能。
+
+.步驟
+. 確認主機上的 Open vSwitch 已啟用：
++
+.. 確定 Open vSwitch 是否正在運作：
++
+[source, cli]
+----
+systemctl status openvswitch
+----
+.. 如果 Open vSwitch 未執行、請啟動它：
++
+[source, cli]
+----
+systemctl start openvswitch
+----
+
+
+. 顯示 Open vSwitch 配置：
++
+[source, cli]
+----
+ovs-vsctl show
+----
++
+如果主機上尚未設定 Open vSwitch，則組態會顯示為空白。
+
+. 新增 vSwitch 實例：
++
+[source, cli]
+----
+ovs-vsctl add-br <bridge_name>
+----
++
+例如：
+
++
+[source, cli]
+----
+ovs-vsctl add-br ontap-br
+----
+. 關閉網路介面：
++
+[source, cli]
+----
+ifdown <interface_1>
+ifdown <interface_2>
+----
+. 使用 Link Aggregation Control Protocol（LACP）合併鏈路：
++
+[source, cli]
+----
+ovs-vsctl add-bond <internal_network> bond-br <interface_1> <interface_2> bond_mode=balance-slb lacp=active other_config:lacp-time=fast
+----
++
+
+NOTE: 只有當存在多個介面時，才需要設定連結。
+
+. 啟動網路介面：
++
+[source, cli]
+----
+ifup <interface_1>
+ifup <interface_2>
+----
+

@@ -1,0 +1,87 @@
+---
+sidebar: sidebar 
+permalink: concept_ha_mirroring.html 
+keywords: ontap select, ha, high availability, synchronous replication, mirrored aggregates, write path, raid syncmirror, rsm 
+summary: '使用 RAID SyncMirror (RSM)、鏡像 Aggregate 和寫入路徑防止資料遺失。' 
+---
+= ONTAP Select HA RSM 和鏡像 Aggregate
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+使用 RAID SyncMirror (RSM)、鏡像 Aggregate 和寫入路徑防止資料遺失。
+
+
+
+[[synchronous-replication]]
+== 同步複寫
+
+ONTAP HA 模型是基於 HA 合作夥伴的概念建構。ONTAP Select 將此架構擴展到非共享的通用伺服器領域，它利用 ONTAP 中存在的 RAID SyncMirror (RSM) 功能在叢集節點之間複製資料區塊，從而在 HA 對中提供兩份使用者資料副本。
+
+一個包含中間節點的雙節點叢集可以跨越兩個資料中心。如需更多資訊，請參閱 link:reference_plan_best_practices.html#two-node-stretched-ha-metrocluster-sds-best-practices["雙節點延伸 HA（MetroCluster SDS）最佳實務做法"] 章節。
+
+
+
+[[mirrored-aggregates]]
+== 鏡射 Aggregate
+
+ONTAP Select 叢集由 2 到 12 個節點組成。每個高可用性（HA）配對包含兩份使用者資料副本，透過 IP 網路在節點間同步鏡像。這種鏡像對使用者而言是透明的，它是資料 Aggregate 的屬性，在資料 Aggregate 建立過程中自動設定。
+
+ONTAP Select 叢集中的所有 Aggregate 都必須進行鏡像，以確保在節點容錯移轉時資料可用，並避免硬體故障導致的單點故障（SPOF）。ONTAP Select 叢集中的 Aggregate 由 HA 配對中每個節點提供的虛擬磁碟構建，並使用下列磁碟：
+
+* 本機磁碟集（由目前 ONTAP Select 節點提供）
+* 一組鏡像磁碟（由目前節點的 HA 合作夥伴貢獻）
+
+
+
+NOTE: 用於建構鏡像 Aggregate 的本機磁碟和鏡像磁碟必須大小相同。這些 Aggregate 分別稱為 plex 0 和 plex 1（分別表示本機鏡像配對和遠端鏡像配對）。實際的 plex 編號在您的安裝中可能有所不同。
+
+這種方法與標準 ONTAP 叢集的工作方式截然不同。這適用於 ONTAP Select 叢集中的所有根磁碟和資料磁碟。Aggregate 包含資料的本機副本和鏡像副本。因此，包含 N 個虛擬磁碟的 Aggregate 可提供 N/2 個磁碟的獨立儲存空間，因為第二個資料副本位於其自身的獨立磁碟上。
+
+下圖顯示四節點 ONTAP Select 叢集中的 HA 配對。此叢集中有一個 Aggregate（test），使用來自兩個 HA 合作夥伴的儲存設備。此資料 Aggregate 由兩組虛擬磁碟組成：本機集由擁有叢集節點的 ONTAP Select（Plex 0）提供，遠端集由容錯移轉合作夥伴（Plex 1）提供。
+
+Plex 0 是存放所有本機磁碟的儲存桶。Plex 1 是存放鏡像磁碟的儲存桶，這些磁碟負責儲存使用者資料的第二個複寫副本。擁有 Aggregate 的節點向 Plex 0 提供磁碟，而該節點的 HA 合作夥伴節點則向 Plex 1 提供磁碟。
+
+在下圖中、有一個包含兩個磁碟的鏡射 Aggregate。此 Aggregate 的內容會在兩個叢集節點之間進行鏡射、本機磁碟 NET-1.1 放置在 Plex 0 儲存區中、遠端磁碟 NET-2.1 放置在 Plex 1 儲存區中。在此範例中、Aggregate test 由左側的叢集節點擁有、並使用本機磁碟 NET-1.1 和 HA 合作夥伴鏡射磁碟 NET-2.1。
+
+*ONTAP Select 鏡像 Aggregate*image:DDHA_03.jpg["ONTAP Select 鏡像 Aggregate"]
+
+
+NOTE: 部署 ONTAP Select 叢集時，系統上的所有虛擬磁碟都會自動指派到正確的 plex，使用者無需進行任何額外的磁碟分配操作。這可以防止磁碟被意外分配到錯誤的 plex，並提供最佳的鏡像磁碟配置。
+
+
+
+[[write-path]]
+== 寫入路徑
+
+叢集節點之間資料區塊的同步鏡像、以及系統故障時不遺失資料的要求、對於傳入寫入作業在 ONTAP Select 叢集中傳播時所採取的路徑有重大影響。此程序包含兩個階段：
+
+* 致謝
+* 取消暫存
+
+
+對目標磁碟區的寫入作業透過資料 LIF 進行，並提交到 ONTAP Select 節點系統磁碟上的虛擬化 NVRAM 分割區，之後才會確認並傳回給客戶端。在 HA 配置中，由於這些 NVRAM 寫入作業在確認之前會立即鏡像到目標磁碟區擁有者的 HA 夥伴節點，因此會增加一個步驟。此程序可確保在原始節點發生硬體故障時，HA 夥伴節點上的檔案系統一致性。
+
+寫入作業提交到 NVRAM 後，ONTAP 會定期將此分割區的內容移至對應的虛擬磁碟，此程序稱為「移出」。此程序僅在擁有目標磁碟區的叢集節點上執行一次，不會在 HA 合作夥伴節點上執行。
+
+下圖顯示傳入 ONTAP Select 節點之寫入要求的寫入路徑。
+
+*ONTAP Select 寫入路徑工作流程* image:DDHA_04.jpg["ONTAP Select 寫入路徑工作流程"]
+
+傳入寫入確認包括以下步驟：
+
+* 寫入操作透過 ONTAP Select 節點 A 擁有的邏輯介面進入系統。
+* 寫入作業會提交到節點 A 的 NVRAM,並鏡像到 HA 合作夥伴節點 B。
+* 當 I/O 請求同時出現在兩個 HA 節點上時，該請求就會被確認並傳回給用戶端。
+
+
+ONTAP Select 從 NVRAM 移轉至資料 Aggregate（ONTAP CP）包括下列步驟：
+
+* 寫入操作從虛擬 NVRAM 轉移到虛擬資料集合體。
+* 鏡像引擎會同步將區塊複寫到兩個 plex。
+

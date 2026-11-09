@@ -1,0 +1,26 @@
+---
+sidebar: sidebar 
+permalink: task_adm_video_console.html 
+keywords: administer, administering, web, video console 
+summary: 您可以存取執行 ONTAP Select 的 ESXi 虛擬機器的視訊主控台。 
+---
+= 存取 ONTAP Select 視訊控制台
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+您可以存取執行 ONTAP Select 的 Hypervisor 虛擬機器視訊主控台。
+
+.關於此任務
+您可能需要存取虛擬機器主控台來疑難排解問題，或在 NetApp 支援人員要求時存取該主控台。
+
+.步驟
+. 存取 vSphere 用戶端並登入。
+. 在層級結構中導覽到對應的位置，找到 ONTAP Select 虛擬機器。
+. 在虛擬機器上按一下滑鼠右鍵，然後選取 *Open Console* 。
+

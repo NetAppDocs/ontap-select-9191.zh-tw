@@ -1,0 +1,24 @@
+---
+sidebar: sidebar 
+permalink: task_cli_security.html 
+keywords: administer, administering, cli, security 
+summary: 在確保 ONTAP Select 部署安全的過程中，您可以執行以下幾個相關任務。 
+---
+= 保護 ONTAP Select 部署
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+您可以視需要使用命令列介面變更 Deploy 虛擬機器系統管理員帳戶的密碼，以確保 ONTAP Select 部署是安全的。
+
+.步驟
+. 使用系統管理員帳戶登入 Deploy 公用程式 CLI。
+. 變更密碼：
+`password modify`
+. 根據您的環境適當回應所有提示。
+

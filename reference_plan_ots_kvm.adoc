@@ -1,0 +1,45 @@
+---
+sidebar: sidebar 
+permalink: reference_plan_ots_kvm.html 
+keywords: plan, planning, vnas, kvm 
+summary: 使用 KVM Hypervisor 時，有幾個規劃問題需要考慮。 
+---
+= ONTAP Select 的 KVM 外部儲存需求
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+您可以在 KVM Hypervisor 上設定 ONTAP Select，並連接外部儲存陣列。
+
+
+
+[[basic-requirements-and-restrictions]]
+== 基本要求和限制
+
+如果使用外部陣列作為 ONTAP Select 儲存池，則適用下列組態限制：
+
+* 您必須使用 CLVM 定義為邏輯集區類型。
+* 您必須提供儲存容量限制。
+* 此組態僅支援 FC、Fibre Channel over Ethernet（FCoE）和 iSCSI 傳輸協定。
+* 此組態無法辨識精簡配置儲存設備。
+
+
+
+CAUTION: 您指定的儲存容量必須在外部儲存裝置的允許儲存容量範圍內。如果您未提供容量限制，或在磁碟建立作業期間外部儲存裝置空間不足，則會發生錯誤。
+
+
+
+[[best-practices]]
+== 最佳實務
+
+您應該遵循以下最佳實務做法：
+
+* 為 ONTAP Select 網路和外部儲存定義專用網路連接埠、頻寬和 vSwitch 組態
+* 設定容量選項以限制儲存使用率（ONTAP Select 無法使用外部儲存資源池的全部容量）
+* 確認所有外部儲存陣列盡可能使用可用的備援和高可用性（HA）功能
+

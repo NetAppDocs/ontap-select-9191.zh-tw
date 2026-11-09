@@ -1,0 +1,69 @@
+---
+sidebar: sidebar 
+permalink: concept_lic_production.html 
+keywords: license, licensing, production, purchased, standard, premium, premium xl 
+summary: 確定 ONTAP Select 適合您的組織後、即可購買支援正式作業部署所需的授權。您必須選擇 Capacity Tiers 或 Capacity Pools 授權模式、以及每個部署的儲存容量。 
+---
+= 了解用於生產部署的 ONTAP Select 購買許可證
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+確定 ONTAP Select 適合您的組織後、即可購買支援正式作業部署所需的授權。您必須選擇容量資源池或容量層授權模式，以及每個部署的儲存容量。
+
+
+
+[[common-licensing-characteristics]]
+== 常見授權特性
+
+_Capacity Pools_ 和 _Capacity Tiers_ 授權模式在多個方面有顯著差異。然而，這兩種授權模式也具有一些共同特徵，包括：
+
+* 在生產環境中部署 ONTAP Select 時，您必須根據需要購買一個或多個授權。
+* 授權的儲存容量以 1 TB 為單位進行分配。
+* 支援所有平台授權方案（標準版、高級版和高級版 XL）。
+* 在取得必要授權時，如有需要，您應聯絡 NetApp 客戶團隊或合作夥伴尋求協助。
+* 您必須將授權檔案上傳到 Deploy 管理公用程式，然後該公用程式會根據授權模式套用授權。
+* 安裝並套用授權後、您可以聯絡 NetApp 客戶團隊或合作夥伴以取得更新的授權、藉此增加額外容量。
+* 最初使用購買的授權部署的 ONTAP Select 節點無法轉換為評估授權。
+
+
+
+
+[[capacity-tiers-licensing-model]]
+== Capacity Tiers 授權模式
+
+容量分層授權模式有以下幾個獨特特點：
+
+* 您必須為每個 ONTAP Select 節點購買授權。
+* 您可以購買的最低容量為 1 TB。
+* 每個 Capacity Tier 授權都有儲存容量，並鎖定至特定節點。
+* 儲存容量可識別原始容量，並對應於 ONTAP Select 虛擬機器可用的資料磁碟總允許大小。
+* NetApp 為每個 ONTAP Select 節點產生一組九位數的授權序號。
+* 指派給節點的儲存空間是永久性的 （無需續約），但您必須續約與授權關聯的支援合約。
+* 高可用性（HA）配對中的每個 ONTAP Select 節點都需要至少與連接到該節點的原始儲存容量一樣大的授權。
+* 節點序號為九位數，與授權序號相同。
+* 您可以在叢集部署期間或建立叢集後的 30 天內套用授權檔案。
+
+
+
+
+[[capacity-pools-licensing-model]]
+== Capacity Pools 授權模式
+
+容量池授權模式具有以下幾個獨特特點：
+
+* 您必須為每個共享 Capacity Pool 購買授權。
+* 您可以購買的最低容量為 2 TB。
+* 每個容量池授權都具有儲存容量，並且鎖定到 Deploy 管理公用程式中的特定授權管理器執行個體。
+* 儲存容量標識原始容量，對應於您可以在 ONTAP Select 虛擬機器中建立的資料聚合的總允許大小。
+* NetApp 會為每個容量池產生一個九位數的授權序號。
+* 分配給容量池的儲存設備僅在根據購買的特定時間內有效 (需要續約)。
+* License Manager 根據 Capacity Pool 授權序號產生一個二十位數的節點序號。
+* ONTAP Select 叢集中的所有 ONTAP Select 節點共用相同的授權容量。這表示授權必須足夠大，以提供分配給叢集中所有節點的儲存空間。
+* 每個節點都會自動從共用容量集區租用儲存容量，以供其本機資料集合體使用。
+

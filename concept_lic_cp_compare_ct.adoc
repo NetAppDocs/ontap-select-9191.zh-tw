@@ -1,0 +1,61 @@
+---
+sidebar: sidebar 
+permalink: concept_lic_cp_compare_ct.html 
+keywords: license, licensing, Capacity Pools, Capacity Tiers, comparing 
+summary: Capacity Tiers 和 Capacity Pools 授權模式之間存在幾個差異。 
+---
+= ONTAP Select 容量層級與容量集區授權比較
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+下表比較了 ONTAP Select 支援的兩種正式作業授權模式。
+
+[cols="20,40,40"]
+|===
+|  | 容量層 | 容量資源池 
+
+
+| 授權序號 | NetApp 產生九個數字並將它們分配給一個節點 | NetApp 產生九位數字並將其分配給容量池。 
+
+
+| 授權鎖定 | 鎖定至 ONTAP Select 節點 | 已鎖定至 License Manager 執行個體 
+
+
+| 授權期間 | 永久有效（無需續約） | 根據購買的固定期限（需要續約） 
+
+
+| 資料 Aggregate 的租用期間 | 不適用 | 一小時至七天 
+
+
+| 節點序號 | 九位數字，與授權序號相同 | 二十位數字，由 License Manager 產生。 
+
+
+| 支援 | 附加元件與限時 | 包含且共同條款 
+
+
+| 授權類型 | 標準版、進階版、進階 XL 版 | 標準版、進階版、進階 XL 版 
+
+
+| 可使用評估授權 | 是的 | 是的 
+
+
+| 評估至正式作業升級 | 是的 | 否 
+
+
+| ONTAP Select 虛擬機器大小調整（小到中、中到大） | 是的 | 是的 
+
+
+| 強制執行:授權已過期 | N/A | 是（無寬限期） 
+
+
+| 最低授權 | 1 TB | 2 TB 
+
+
+| 最大管理空間 | 每個節點 400 TB | 每個節點 400 TB 
+|===

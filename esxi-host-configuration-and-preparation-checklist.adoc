@@ -1,0 +1,97 @@
+---
+sidebar: sidebar 
+permalink: esxi-host-configuration-and-preparation-checklist.html 
+keywords: ontap select, pre-installation checklist, esxi, host preparation 
+summary: 準備部署 ONTAP Select 節點的每台 ESXi Hypervisor 主機。在準備主機時，請仔細評估部署環境，確保主機已正確設定，並準備好支援 ONTAP Select 叢集的部署。 
+---
+= 為 ONTAP Select 準備 ESXi 主機
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+準備部署 ONTAP Select 節點的每台 ESXi Hypervisor 主機。在準備主機時，請仔細評估部署環境，確保主機配置正確，並已準備好支援 ONTAP Select 叢集的部署。
+
+
+NOTE: ONTAP Select Deploy 管理公用程式不會執行虛擬機器管理程式主機所需的網路和儲存配置。您必須在部署 ONTAP Select 叢集之前手動準備每個主機。
+
+
+
+[[step-1-prepare-the-esxi-hypervisor-host]]
+== 步驟 1：準備 ESXi Hypervisor 主機
+
+驗證 ESXi 主機和防火牆連接埠的組態。
+
+.步驟
+. 請確認每台 ESXi 都已設定下列內容：
++
+** 預先安裝並受支援的 Hypervisor
+** VMware vSphere 授權
+
+
+. 驗證同一台 vCenter 伺服器是否可以管理叢集中部署了 ONTAP Select 節點的所有主機。
+. 請確認防火牆連接埠已設定為允許存取 vSphere。這些連接埠必須開啟才能支援與 ONTAP Select 虛擬機器的序列埠連線。
++
+[role="tabbed-block"]
+====
+.建議
+--
+NetApp 建議您開啟以下防火牆連接埠以允許存取 vSphere：
+
+** 連接埠 7200 – 7400 （包括傳入和傳出流量）
+
+
+--
+.預設
+--
+根據預設， VMware 允許在以下連接埠上進行存取：
+
+** 連接埠 22 和連接埠 1024 – 65535 （傳入流量）
+** 連接埠 0 – 65535 （輸出流量）
+
+
+--
+====
++
+如需詳細資訊，請參閱 link:https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/8-0/vsphere-security-8-0/securing-esxi-hosts/customizing-hosts-with-the-security-profile/esxi-firewall-configuration.html["Broadcom VMware vSphere 文件"^]。
+
+. 請熟悉所需的 vCenter 權限。如需詳細資訊，請參閱 link:reference_plan_ots_vcenter.html["VMware vCenter 伺服器"]。
+
+
+
+
+[[step-2-review-the-ontap-select-cluster-configuration]]
+== 步驟 2：檢閱 ONTAP Select 叢集組態
+
+您可以將 ONTAP Select 部署為多節點叢集或單節點叢集。在許多情況下，多節點叢集更佳，因為它提供額外儲存容量和高可用度（HA）功能。
+
+下圖展示了與單節點叢集和四節點叢集一起使用的 ONTAP Select 網路。
+
+[role="tabbed-block"]
+====
+.單節點叢集
+--
+下圖說明單節點叢集。外部網路承載用戶端、管理和跨叢集複寫流量（SnapMirror/SnapVault）。
+
+image:CHK_01.jpg["單節點叢集顯示一個網路"]
+
+--
+.四節點叢集
+--
+下圖展示了一個包含兩個網路的四節點叢集。內部網路支援節點間的通訊，從而為 ONTAP 叢集網路服務提供支援。外部網路承載用戶端、管理和跨叢集複寫流量（SnapMirror/SnapVault）。
+
+image:CHK_02.jpg["顯示兩個網路的四節點叢集"]
+
+--
+.四節點叢集中的單一節點
+--
+下圖展示了四節點叢集中單一 ONTAP Select 虛擬機器的典型網路配置。其中包含兩個分隔的網路：ONTAP 內部網路和 ONTAP 外部網路。
+
+image:CHK_03.jpg["四節點叢集中的單一節點"]
+
+--
+====

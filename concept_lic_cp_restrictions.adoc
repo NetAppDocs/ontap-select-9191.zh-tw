@@ -1,0 +1,38 @@
+---
+sidebar: sidebar 
+permalink: concept_lic_cp_restrictions.html 
+keywords: license, licensing, Capacity Pools, restrictions 
+summary: 以下說明使用 Capacity Pool 授權模式時適用的限制。 
+---
+= ONTAP Select 容量資源池授權的部署限制
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+以下說明使用 Capacity Pool 授權模式時適用的限制。
+
+.每個叢集採用一致的授權模式
+單一 ONTAP Select 叢集內的所有節點都必須使用相同的授權模式，即 Capacity Tiers 或 Capacity Pools。您無法在單一叢集內混用節點的授權類型。
+
+.叢集中的所有節點都使用相同的 License Manager 執行個體
+ONTAP Select 叢集中所有擁有 Capacity Pool 授權的節點必須使用相同的 License Manager 執行個體。由於每個 Deploy 執行個體中只有一個 License Manager 執行個體，因此此限制重申了現有要求，即同一個 Deploy 執行個體必須管理叢集中的所有節點。
+
+.每個節點一個容量資源池
+每個節點只能從一個容量池租用儲存空間。一個節點不能使用兩個或多個容量池。
+
+.HA 配對中的節點使用相同的資源池
+同一 HA 配對中的兩個節點必須從同一個 Capacity Pool 租用儲存設備。不過，同一叢集內的不同 HA 配對可以從同一個 License Manager 管理的不同資源池租用儲存設備。
+
+.儲存授權期限
+您必須在從 NetApp 取得儲存授權時選擇授權期限。例如，授權的有效期限可以是一年。
+
+.資料集合體租賃期間
+當 ONTAP Select 節點請求資料 Aggregate 的儲存租約時，授權管理程式會根據容量資源池的組態提供特定期間的租約。您可以為每個資源池設定一小時到七天的租約期間。預設租約期間為 24 小時。
+
+.指派給 Deploy 的靜態 IP 位址
+使用 Capacity Pools 授權時，必須為 Deploy 管理公用程式指派靜態 IP 位址。

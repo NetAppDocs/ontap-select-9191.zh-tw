@@ -1,0 +1,125 @@
+---
+sidebar: sidebar 
+permalink: concept_stor_eff_support.html 
+keywords: ontap select, storage efficiency support 
+summary: ONTAP Select 提供的儲存效率選項與 FAS 和 AFF 陣列上的儲存效率選項類似。 
+---
+= ONTAP Select 儲存效率支援
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+ONTAP Select 提供的儲存效率選項與 FAS 和 AFF 陣列上的儲存效率選項類似。
+
+使用全快閃 VSAN 或通用快閃記憶體陣列的 ONTAP Select 虛擬 NAS（vNAS）部署應遵循使用非 SSD 直接連接儲存設備（DAS）的 ONTAP Select 最佳實務做法。
+
+只要您擁有配備 SSD 硬碟的 DAS 儲存和進階授權，新安裝的系統就會自動啟用類似 AFF 的特性。
+
+具有類似 AFF 的特性，以下內嵌 SE 功能會在安裝過程中自動啟用：
+
+* 內嵌零模式偵測
+* Volume 內嵌重複資料刪除
+* Volume 背景重複資料刪除
+* 自適應內嵌壓縮
+* 內嵌資料壓縮
+* Aggregate 內嵌重複資料刪除
+* Aggregate 背景重複資料刪除
+
+
+若要驗證 ONTAP Select 是否已啟用所有預設儲存效率原則，請在新建立的磁碟區上執行下列命令：
+
+[listing]
+----
+<system name>::> set diag
+Warning: These diagnostic commands are for use by NetApp personnel only.
+Do you want to continue? {y|n}: y
+twonode95IP15::*> sis config
+Vserver:                                SVM1
+Volume:                                 _export1_NFS_volume
+Schedule                                -
+Policy:                                 auto
+Compression:                            true
+Inline Compression:                     true
+Compression Type:                       adaptive
+Application IO Si                       8K
+Compression Algorithm:                  lzopro
+Inline Dedupe:                          true
+Data Compaction:                        true
+Cross Volume Inline Deduplication:      true
+Cross Volume Background Deduplication:  true
+----
+
+NOTE: 對於從 9.6 及更高版本升級的 ONTAP Select，您必須將 ONTAP Select 安裝在具有高級授權的 DAS SSD 儲存設備上。此外，您必須在使用 ONTAP Deploy 進行初始叢集安裝時勾選 *Enable Storage Efficiencies* 核取方塊。如果在 ONTAP 升級後未滿足先前條件，則啟用類似 AFF 的特性需要手動建立開機引數並重新啟動節點。請聯絡技術支援以了解更多詳情。
+
+.ONTAP Select 儲存效率組態
+下表總結了各種可用的儲存效率選項，這些選項預設為啟用，或預設不啟用但建議啟用，具體取決於媒體類型和軟體授權。
+
+[cols="4"]
+|===
+| ONTAP Select 功能 | DAS SSD（premium 或 premium XL^1^） | DAS HDD （所有授權） | vNAS （所有授權） 
+
+
+| 內嵌零偵測 | 是 (預設) | 是 使用者可按磁碟區啟用此功能 | 是 使用者可按磁碟區啟用此功能 
+
+
+| Volume 內嵌重複資料刪除 | 是 (預設) | 無法使用 | 不支援 
+
+
+| 32K 內嵌壓縮（次要壓縮） | 是的，使用者可按磁碟區啟用此功能。 | 是 使用者可按磁碟區啟用此功能 | 不支援 
+
+
+| 8K 內嵌壓縮（自適應壓縮） | 是 (預設) | 是 使用者可按磁碟區啟用 | 不支援 
+
+
+| 背景壓縮 | 不支援 | 是 使用者可按磁碟區啟用 | 是 使用者可按磁碟區啟用此功能 
+
+
+| 壓縮掃描器 | 是的 | 是的 | 是 使用者可按磁碟區啟用此功能 
+
+
+| 內嵌資料壓縮 | 是 (預設) | 是 使用者可按磁碟區啟用 | 不支援 
+
+
+| 壓實掃描器 | 是的 | 是的 | 不支援 
+
+
+| Aggregate 內嵌重複資料刪除 | 是 (預設) | N/A | 不支援 
+
+
+| Volume 背景重複資料刪除 | 是 (預設) | 是 使用者可按磁碟區啟用 | 是 使用者可按磁碟區啟用此功能 
+
+
+| Aggregate 背景重複資料刪除 | 是 (預設) | N/A | 不支援 
+|===
+[small]#^1^ONTAP Select 9.6 支援新的授權（premium XL）和新的 VM 大小（large）。但是，large VM 僅支援使用軟體 RAID 的 DAS 組態。9.6 版本中的 large ONTAP Select VM 不支援硬體 RAID 和 vNAS 組態。#
+
+.關於 DAS SSD 組態升級行為的注意事項
+升級到 ONTAP Select 9.6 或更高版本後，請等待 `system node upgrade-revert show`指令指示升級已完成，然後再驗證現有磁碟區的儲存效率值。
+
+在升級到 ONTAP Select 9.6 或更高版本的系統中，在現有 aggregate 或新建立的 aggregate 上建立的新 volume 與在全新部署上建立的 volume 具有相同的行為。經歷 ONTAP Select 程式碼升級的現有 volume 與新建立的 volume 具有大部分相同的儲存效率原則，但也存在一些差異：
+
+情境 1:: 如果在升級之前磁碟區上未啟用任何儲存效率原則，則：
++
+--
+* 具有 `space guarantee = volume`的磁碟區未啟用即時資料壓縮、Aggregate 即時重複資料刪除和 Aggregate 背景重複資料刪除。這些選項可在升級後啟用。
+* 具有 `space guarantee = none`的磁碟區未啟用背景壓縮。此選項可在升級後啟用。
+* 升級後，現有磁碟區的儲存效率原則設定為 auto。
+
+
+--
+情境 2:: 如果在升級之前已在磁碟區上啟用某些儲存效率功能，則：
++
+--
+* 具有 `space guarantee = volume`的磁碟區在升級後看不到任何差異。
+* 具有 `space guarantee = none`的磁碟區已啟用 Aggregate 背景重複資料刪除功能。
+* 具有 `storage policy inline-only`的 Volume 的原則設定為自動。
+* 除了具有 `space guarantee = none`的磁碟區之外，具有使用者定義儲存效率原則的磁碟區在原則上沒有變更。這些磁碟區已啟用 Aggregate 背景重複資料刪除。
+
+
+--
+

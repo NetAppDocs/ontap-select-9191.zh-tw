@@ -1,0 +1,196 @@
+---
+sidebar: sidebar 
+permalink: task_adm_licenses.html 
+keywords: administer, administering, web, licenses 
+summary: 作為管理 ONTAP Select 授權的一部分，您可以執行幾項相關工作。 
+---
+= 管理 ONTAP Select 授權
+:hardbreaks:
+:allow-uri-read: 
+:nofooter: 
+:icons: font
+:linkattrs: 
+:imagesdir: ./media/
+
+
+[role="lead"]
+作為管理 ONTAP Select 授權的一部分，您可以執行幾項相關工作。
+
+
+
+[[manage-the-capacity-tier-licenses]]
+== 管理 Capacity Tier 授權
+
+您可以根據需要新增、編輯和刪除 ONTAP Select Capacity Tier 授權。
+
+.步驟
+. 使用系統管理員帳戶透過 Web 介面登入 Deploy 公用程式。
+. 選擇頁面頂部的 *Administration* 標籤。
+. 選取 *Licenses*，然後選取 *Capacity Tier*。
+. （選用）選取 *Filter* 以限制顯示的授權。
+. 若要取代現有授權，請選取授權、選取image:icon_kebab.gif["選項"]，然後選取 *Update*。
+. 若要新增授權、請在頁面頂端選取 *Add* 、然後選取 *Upload License(s)* 、並從本機工作站選取授權檔案。
+
+
+
+
+[[manage-the-capacity-pool-licenses]]
+== 管理 Capacity Pool 授權
+
+您可以根據需要新增、編輯和刪除 ONTAP Select Capacity Pool 授權。
+
+.步驟
+. 使用系統管理員帳戶透過 Web 介面登入 Deploy 公用程式。
+. 選擇頁面頂部的 *Administration* 標籤。
+. 選取 *Licenses*，然後選取 *Capacity Pools*。
+. （選用）選取 *Filter* 以限制顯示的授權。
+. （選用）選擇授權並選擇 image:icon_kebab.gif["選項"] 以管理現有授權。
+. 新增授權或續約現有授權：
++
+[role="tabbed-block"]
+====
+.新增授權
+--
+若要新增授權，請在頁面頂端選取 *Add* 。
+
+--
+.續約現有授權
+--
+續訂現有授權：
+
+.. 在現有授權上選擇 image:icon_kebab.gif["選項"]。
+.. 選擇 *Upload License(s)*。
+.. 從本機工作站選擇授權檔案。
+
+
+--
+====
+. 若要查看容量池清單：
++
+.. 選擇 *Summary* 。
+.. 選擇並展開儲存池，即可查看從該儲存池租用儲存設備的叢集和節點。
+.. 在 *License Information* 下查看授權的目前狀態。
+.. 您可以在「租賃到期」下變更為集區發出的租賃期限。
+
+
+. 若要查看叢集清單：
++
+.. 選取 *Details* 。
+.. 選擇並展開叢集以查看儲存使用率。
+
+
+
+
+
+
+[[reinstall-a-capacity-pool-license]]
+== 重新安裝 Capacity Pool 授權
+
+每個有效的 Capacity Pool 授權都鎖定到特定的 License Manager 執行個體，該執行個體包含在 Deploy 管理公用程式的執行個體中。如果您正在使用 Capacity Pool 授權，然後還原或復原 Deploy 執行個體，則原始授權將不再有效。您必須產生新的容量授權檔案，然後將授權安裝到新的 Deploy 執行個體。
+
+.開始之前
+* 確定原始 Deploy 執行個體所使用的所有 Capacity Pool 授權。
+* 如果在建立新的 Deploy 執行個體時還原備份，請確定備份是否為最新版本。
+* 找到由原始 Deploy 執行個體最近建立的 ONTAP Select 節點（僅當未將原始 Deploy 執行個體的最新備份還原到新的 Deploy 執行個體時才需要這樣做）。
+* 還原或重新建立 Deploy 執行個體
+
+
+.關於此任務
+從整體來看，這項任務包含三個部分。您必須重新產生並安裝 Deploy 執行個體所使用的所有 Capacity Pool 授權。將所有授權重新安裝到新的 Deploy 執行個體後，您可以根據需要重設序號。最後，如果 Deploy IP 位址已變更，則必須更新每個使用 Capacity Pools 授權的 ONTAP Select 節點。
+
+.步驟
+. 聯絡 NetApp 支援並將原始 Deploy 執行個體的所有 Capacity Pool 授權解除繫結和取消註冊。
+. 為每個 Capacity Pool 授權取得並下載新的授權檔案。
++
+如需詳細資訊，請參閱 link:task_lic_acquire_cp.html["取得 Capacity Pool 授權"]。
+
+. 在新的 Deploy 執行個體上安裝 Capacity Pool 授權：
++
+.. 使用系統管理員帳戶登入 Deploy 公用程式 Web 使用者介面。
+.. 選擇頁面頂部的 *Administration* 標籤。
+.. 選擇 *Licenses*，然後選擇 *Capacity Pool*。
+.. 選擇 *Add* ，然後選擇 *Upload License(s)* 來選擇和上傳授權。
+
+
+. 如果您在未還原備份的情況下建立新的 Deploy 執行個體，或者您使用的備份不是最新的，則必須更新序號：
++
+.. 使用系統管理員帳戶登入 Deploy 公用程式命令列介面。
+.. 顯示由原始 Deploy 執行個體最近建立之節點的序號：
++
+`node show -cluster-name CLUSTER_NAME -name NODE_NAME -detailed`
+
+.. 從二十位數節點序號中提取最後八位數，以獲得原始 Deploy 執行個體使用的最後一個序號。
+.. 將 20 加到序列序號以建立新的序列序號。
+.. 設定新 Deploy 執行個體的序號：
++
+`license-manager modify -serial-sequence SEQ_NUMBER`
+
+
+
+. 如果指派給新 Deploy 執行個體的 IP 位址與原始 Deploy 執行個體的 IP 位址不同，則必須更新每個使用 Capacity Pools 授權的 ONTAP Select 節點上的 IP 位址：
++
+.. 登入 ONTAP Select 節點的 ONTAP 命令列介面。
+.. 進入進階權限模式：
++
+`set adv`
+
+.. 顯示目前組態：
++
+`system license license-manager show`
+
+.. 設定節點使用的 License Manager（Deploy）IP 位址：
++
+`system license license-manager modify -host NEW_IP_ADDRESS`
+
+
+
+
+
+
+
+[[convert-an-evaluation-license-to-a-production-license]]
+[[convert-license]]
+== 將評估授權轉換為正式授權
+
+您可以使用 Deploy 管理公用程式將 ONTAP Select 評估叢集升級到使用正式版 Capacity Tier 授權。
+
+.開始之前
+* 每個節點必須分配足夠的儲存空間，以支援正式作業授權所需的最低需求。
+* 評估叢集中的每個節點都必須擁有 Capacity Tier 授權。
+
+
+.關於此任務
+對單節點叢集進行叢集授權修改會造成服務中斷。但對於多節點叢集則不然，因為轉換過程會逐一重新開機每個節點以套用授權。
+
+.步驟
+. 使用系統管理員帳戶登入 Deploy 公用程式 Web 使用者介面。
+. 在頁面頂部選擇 *Clusters* 選項卡，然後選擇所需的叢集。
+. 在叢集詳細資料頁面頂端，選取 *Click here* 以修改叢集授權。
++
+您也可以在 *Cluster Details* 區段中，選取評估授權旁的 *Modify*。
+
+. 為每個節點選擇一個可用的正式作業授權，或根據需要上傳其他授權。
+. 提供 ONTAP 認證資料並選取 *Modify* 。
++
+叢集的授權升級可能需要幾分鐘的時間。請等待程序完成後再離開頁面或進行任何其他變更。
+
+
+
+.完成後
+評估部署中分配給每個節點的二十位數節點序號被升級時使用的正式授權中的九位數序號取代。
+
+
+
+[[manage-an-expired-capacity-pool-license]]
+== 管理已過期的 Capacity Pool 授權
+
+通常情況下，授權過期後不會發生任何事情。但是，由於節點與已過期的授權關聯，因此您無法安裝其他授權。在續訂授權之前，您不應執行任何會導致 Aggregate 離線的操作，例如重新開機或容錯移轉作業。建議您盡快續訂授權。
+
+有關 ONTAP Select 和授權續約的詳細資訊，請參閱 link:reference_faq.html#licenses-installation-upgrades-and-reverts["常見問題"] 中的授權、安裝、升級和還原章節。
+
+
+
+[[manage-add-on-licenses]]
+== 管理附加授權
+
+對於 ONTAP Select 產品，附加授權直接在 ONTAP 中套用，而不是透過 ONTAP Select Deploy 進行管理。如需詳細資訊，請參閱 link:https://docs.netapp.com/us-en/ontap/system-admin/manage-licenses-concept.html["管理授權總覽（僅限叢集管理員）"^] 和 link:https://docs.netapp.com/us-en/ontap/task_admin_enable_new_features.html["新增授權金鑰即可啟用新功能"^]。
